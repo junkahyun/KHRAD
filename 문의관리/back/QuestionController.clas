@@ -56,7 +56,6 @@
       params.put("share_issue_comment_no", share_issue_comment_no);
       
       String stdtNoList = stdt_no;
-      params.put("share_type", "��������".equals(map.get("stdt_major_sub")) ? "����" : "����");
       List MediaRatingList = this.currService.selectBoardMediaRating(params, stdtNoList);
       
       Map mediaMap = new HashMap();
@@ -108,10 +107,7 @@
       }
       nowPlusThree = nowPlusThree + currentDate.get(5);
       
-      String authenticCode = this.authorityManager.getEncryptString((String)params.get("quest_no") + "/������/" + 
-        nowPlusThree + 
-        "/������/" + (String)params.get("curr_branch") + 
-        "/������/" + (String)params.get("train_month"));
+      String authenticCode = this.authorityManager.getEncryptString((String)params.get("quest_no") + nowPlusThree + (String)params.get("curr_branch") + (String)params.get("train_month"));
       
       String currentURL = Utils.getPropertyData("resno.address");
       
@@ -122,12 +118,6 @@
         
         String link = currentURL + "?&authenticCode=" + authenticCode;
         StringBuilder content = new StringBuilder();
-        content.append("<div style='width: 720px; margin: 90px auto;'><div style='overflow: hidden; border-bottom: 5px solid #3d4755;'><a href='http://www.iei.or.kr' style='float: left;'><img src='http://www.iei.or.kr/resources/images/mail/mail_logo.jpg' alt='logo' style='border: 0;'/></a><img src='http://www.iei.or.kr/resources/images/mail/mail_top_right.jpg' alt='' style='float: right;'></div>");
-        content.append("<div style='height: 157px; background: url(http://www.iei.or.kr/resources/images/mail/mail_top_back.jpg);'><p style='font-size: 22px; font-weight: 900; font-family: NanumBarunGothic, Nanum Gothic, Dotum, Gulim, sans-serif; margin: 0; padding-top: 70px; color: #333333; text-align: center;'><span style='color: #27a2e9;'>������ ����</span> ��������������.</p></div>");
-        content.append("<div style='border-left: 1px solid #ededed; border-right: 1px solid #ededed; padding-top: 60px; padding-bottom: 50px; text-align: center;'><p style='margin: 0; text-align: center; font-family: NanumBarunGothic, Nanum Gothic, Dotum, Gulim, sans-serif; font-size: 14px; font-weight: 900; color: #8d8d8d; padding: 0;'>");
-        content.append("���������� KH���������� ������.<br>������ ������ ������ ���� ������ �������� ���������� ������������ ��������.<br>�������� �������� ������ ������ ���������� �� ������ �������� ������ ��������.<br>���� ������ ������ ������ ������ 3���� ���� ���� ����������.<br><br><a href='" + link + "' target='_target'><span style='color: #5cbdf5;font-size: 11pt;'>" + link + "</span></a>");
-        content.append("</p><div style='background: #dbdbdb; height: 1px; width: 190px; margin: 30px auto; margin-bottom: 20px;'></div><p style='margin: 0; text-align: center; font-family: NanumBarunGothic, Nanum Gothic, Dotum, Gulim, sans-serif; font-size: 14px; color: #8d8d8d; letter-spacing: -1px; padding: 0 0 35px 0;'>(��)KH������������ ������ ������ ����������.<br>���� ������ �������� �������� ���� ���� ������ ������������.</p><a href='http://www.iei.or.kr'><img src='http://www.iei.or.kr/resources/images/mail/mail_botton.jpg' alt='' border='0'></a></div><div style='border-top: 5px solid #3d4755; background: url(http://www.iei.or.kr/resources/images/mail/mail_buttom.jpg); height: 135px; font-family: NanumBarunGothic, Nanum Gothic, Dotum, Gulim, sans-serif; font-size: 12px;'></div></div>");
-        GMailSender.mailSend1("����������. KH����������������. ������ ���� ��������������.", "KH����������", email, "ieiorkr@iei.or.kr", String.valueOf(content), null);
         model.put("link", link);
       }
       else
@@ -141,7 +131,7 @@
     {
       this.logger.error("disposableLink method error ", e);
       model.put("result", "0");
-      model.put("message", "[������ �������� ����]:[" + e.getMessage() + "]");
+      model.put("message", "[]:[" + e.getMessage() + "]");
       mav = new ModelAndView("jsonView", model);
     }
     return mav;
@@ -175,7 +165,7 @@
       }
       model.put("params", params);
       model.put("result", Integer.valueOf(result));
-      model.put("message", "��������������.");
+     
       
       mav = new ModelAndView("jsonView", model);
     }
@@ -183,7 +173,7 @@
     {
       this.logger.error("questionSave method error ", e);
       model.put("result", "0");
-      model.put("message", "[�������� ����]:[" + e.getMessage() + "]");
+      model.put("message", "[]:[" + e.getMessage() + "]");
       mav = new ModelAndView("jsonView", model);
     }
     return mav;
@@ -206,7 +196,6 @@
       if ("update".equals(params.get("mode")))
       {
         map = this.questionService.selectQuestionMemoView(params);
-        System.out.println("��������" + params);
         map.put("comment", ((String)map.get("comment")).replaceAll("<br>", "\n"));
         model.put("data", map);
       }
@@ -217,7 +206,7 @@
     {
       this.logger.error("questionMemoForm method error ", e);
       model.put("result", "0");
-      model.put("message", "[�������� ����/�������� ����]:[" + e.getMessage() + "]");
+      model.put("message", "[]:[" + e.getMessage() + "]");
       mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
     }
     return mav;
