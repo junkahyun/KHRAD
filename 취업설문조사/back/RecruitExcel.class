@@ -1,0 +1,1494 @@
+package com.rad.recruit;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+
+public class RecruitSurveyExcel
+{
+  public Workbook excelLayout1(List<Map<String, String>> templateName, List<Map<String, Object>> qData, List<Map<String, String>> aData, List<Map<String, Object>> data, List<Map<String, String>> list, Map<String, String> currData)
+  {
+    Workbook wb = new SXSSFWorkbook();
+    SXSSFSheet sh = null;
+    
+    Font font = wb.createFont();
+    font.setFontHeightInPoints((short)9);
+    font.setFontName("���� ����");
+    
+    CellStyle th = wb.createCellStyle();
+    th.setVerticalAlignment((short)1);
+    th.setAlignment((short)2);
+    th.setWrapText(true);
+    th.setBorderTop((short)1);
+    th.setTopBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderBottom((short)1);
+    th.setBottomBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderLeft((short)1);
+    th.setLeftBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderRight((short)1);
+    th.setRightBorderColor((short)Color.BLACK.getRGB());
+    th.setFont(font);
+    
+    CellStyle td = wb.createCellStyle();
+    td.setVerticalAlignment((short)1);
+    td.setAlignment((short)1);
+    td.setWrapText(true);
+    td.setBorderTop((short)1);
+    td.setBorderBottom((short)1);
+    td.setBorderRight((short)1);
+    td.setBorderLeft((short)1);
+    td.setTopBorderColor((short)Color.BLACK.getRGB());
+    td.setBottomBorderColor((short)Color.BLACK.getRGB());
+    td.setRightBorderColor((short)Color.BLACK.getRGB());
+    td.setLeftBorderColor((short)Color.BLACK.getRGB());
+    td.setFont(font);
+    
+    CellStyle head = wb.createCellStyle();
+    head.setVerticalAlignment((short)1);
+    head.setAlignment((short)2);
+    head.setWrapText(true);
+    head.setBorderTop((short)0);
+    head.setBorderBottom((short)0);
+    head.setBorderLeft((short)0);
+    head.setBorderRight((short)0);
+    head.setFont(font);
+    if (data.size() > 0) {
+      for (int i = 0; i < data.size(); i++)
+      {
+        String name = ((Map)data.get(i)).get("name").toString();
+        sh = (SXSSFSheet)wb.createSheet();
+        int k = i + 1;
+        wb.setSheetName(i, k + name);
+        
+        sh.addMergedRegion(new CellRangeAddress(1, 1, 1, 8));
+        sh.addMergedRegion(new CellRangeAddress(3, 3, 1, 2));
+        sh.addMergedRegion(new CellRangeAddress(3, 3, 3, 8));
+        sh.addMergedRegion(new CellRangeAddress(4, 4, 1, 2));
+        sh.addMergedRegion(new CellRangeAddress(4, 4, 3, 8));
+        
+        Row r = sh.createRow(0);
+        Cell c = r.createCell(0);
+        
+        r = sh.createRow(1);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue((String)((Map)templateName.get(0)).get("survey_name"));
+        c.setCellStyle(head);
+        
+        r = sh.createRow(3);
+        sh.setColumnWidth(1, sh.getColumnWidth(1) + 1500);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue("����������");
+        c.setCellStyle(th);
+        
+        c = r.createCell(2);
+        c.setCellStyle(td);
+        
+        c = r.createCell(3);
+        c.setCellValue((String)currData.get("currname"));
+        c.setCellStyle(td);
+        
+        c = r.createCell(4);
+        c.setCellStyle(td);
+        
+        c = r.createCell(5);
+        c.setCellStyle(td);
+        
+        c = r.createCell(6);
+        c.setCellStyle(td);
+        
+        c = r.createCell(7);
+        c.setCellStyle(td);
+        
+        c = r.createCell(8);
+        c.setCellStyle(td);
+        
+        r = sh.createRow(4);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue("����");
+        c.setCellStyle(th);
+        
+        c = r.createCell(2);
+        c.setCellStyle(td);
+        
+        c = r.createCell(3);
+        c.setCellValue(((Map)data.get(i)).get("name"));
+        c.setCellStyle(td);
+        
+        c = r.createCell(4);
+        c.setCellStyle(td);
+        
+        c = r.createCell(5);
+        c.setCellStyle(td);
+        
+        c = r.createCell(6);
+        c.setCellStyle(td);
+        
+        c = r.createCell(7);
+        c.setCellStyle(td);
+        
+        c = r.createCell(8);
+        c.setCellStyle(td);
+        
+        int count = 5;
+        if (list != null) {
+          for (int j = 0; j < list.size(); j++) {
+            if (((Map)data.get(i)).get("no").equals(((Map)list.get(j)).get("stdt_no"))) {
+              for (int h = 0; h < qData.size(); h++)
+              {
+                count++;
+                String[] s_answer = ((String)((Map)list.get(j)).get("result")).split("��");
+                String q_no = (String)((Map)qData.get(h)).get("q_no");
+                List aList = new ArrayList();
+                q_no = (String)((Map)qData.get(h)).get("q_no");
+                sh.addMergedRegion(new CellRangeAddress(count, count, 1, 8));
+                
+                r = sh.createRow(count);
+                r.setHeight((short)400);
+                c = r.createCell(1);
+                c.setCellValue(h + 1 + ". " + ((Map)qData.get(h)).get("question"));
+                c.setCellStyle(td);
+                
+                c = r.createCell(2);
+                c.setCellStyle(td);
+                
+                c = r.createCell(3);
+                c.setCellStyle(td);
+                
+                c = r.createCell(4);
+                c.setCellStyle(td);
+                
+                c = r.createCell(5);
+                c.setCellStyle(td);
+                
+                c = r.createCell(6);
+                c.setCellStyle(td);
+                
+                c = r.createCell(7);
+                c.setCellStyle(td);
+                
+                c = r.createCell(8);
+                c.setCellStyle(td);
+                if ("0".equals(((Map)qData.get(h)).get("answer")))
+                {
+                  count++;
+                  sh.addMergedRegion(new CellRangeAddress(count, count, 1, 8));
+                  
+                  r = sh.createRow(count);
+                  r.setHeight((short)1000);
+                  c = r.createCell(1);
+                  c.setCellValue(s_answer[h]);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(2);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(3);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(4);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(5);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(6);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(7);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(8);
+                  c.setCellStyle(td);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return wb;
+  }
+  
+  public Workbook excelLayout3(List<Map<String, String>> templateName, List<Map<String, Object>> qData, List<Map<String, Object>> data, List<Map<String, String>> list, Map<String, String> currData, ArrayList<String> ch3)
+  {
+    Calendar cal = Calendar.getInstance();
+    int year = cal.get(1);
+    int female = 0;
+    int[] ageList = new int[0];
+    String[] genderList = new String[0];
+    if (ch3.size() > 0)
+    {
+      ageList = new int[ch3.size()];
+      genderList = new String[ch3.size()];
+      for (int i = 0; i < ch3.size(); i++)
+      {
+        String res_no = (String)ch3.get(i);
+        if (!res_no.equals(""))
+        {
+          int gender = Integer.parseInt(res_no.substring(9, 10));
+          int user_year = Integer.parseInt(String.valueOf(res_no.substring(0, 2))) < 50 ? 20 : 19;
+          
+          String age = String.valueOf(year - Integer.parseInt(String.valueOf(user_year) + res_no.substring(0, 2)));
+          ageList[i] = Integer.parseInt(age);
+          genderList[i] = (gender % 2 != 1 ? "��" : "��");
+          
+          ((Map)data.get(i)).put("gender", gender % 2 != 1 ? "��" : "��");
+          ((Map)data.get(i)).put("age", age);
+        }
+      }
+    }
+    Workbook wb = new SXSSFWorkbook();
+    SXSSFSheet sh = null;
+    
+    Font font = wb.createFont();
+    font.setFontHeightInPoints((short)11);
+    font.setFontName("���� ����");
+    
+    Font fontHead = wb.createFont();
+    font.setFontHeightInPoints((short)11);
+    font.setFontName("���� ����");
+    
+    CellStyle th = wb.createCellStyle();
+    th.setVerticalAlignment((short)1);
+    th.setAlignment((short)2);
+    th.setWrapText(true);
+    th.setBorderTop((short)1);
+    th.setTopBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderBottom((short)1);
+    th.setBottomBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderLeft((short)1);
+    th.setLeftBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderRight((short)1);
+    th.setRightBorderColor((short)Color.BLACK.getRGB());
+    th.setFont(font);
+    
+    CellStyle td = wb.createCellStyle();
+    td.setVerticalAlignment((short)1);
+    td.setAlignment((short)1);
+    td.setWrapText(true);
+    td.setBorderTop((short)1);
+    td.setBorderBottom((short)1);
+    td.setBorderRight((short)1);
+    td.setBorderLeft((short)1);
+    td.setTopBorderColor((short)Color.BLACK.getRGB());
+    td.setBottomBorderColor((short)Color.BLACK.getRGB());
+    td.setRightBorderColor((short)Color.BLACK.getRGB());
+    td.setLeftBorderColor((short)Color.BLACK.getRGB());
+    td.setFont(font);
+    
+    CellStyle head = wb.createCellStyle();
+    head.setVerticalAlignment((short)1);
+    head.setAlignment((short)2);
+    head.setWrapText(true);
+    head.setBorderTop((short)0);
+    head.setBorderBottom((short)0);
+    head.setBorderLeft((short)0);
+    head.setBorderRight((short)0);
+    head.setFont(fontHead);
+    
+    CellStyle titleth = wb.createCellStyle();
+    titleth.setVerticalAlignment((short)1);
+    titleth.setAlignment((short)1);
+    titleth.setWrapText(true);
+    titleth.setBorderTop((short)0);
+    titleth.setBorderBottom((short)0);
+    titleth.setBorderLeft((short)0);
+    titleth.setBorderRight((short)0);
+    titleth.setFont(font);
+    if (data.size() > 0) {
+      for (int i = 0; i < data.size(); i++)
+      {
+        String name = ((Map)data.get(i)).get("name").toString();
+        sh = (SXSSFSheet)wb.createSheet();
+        int k = i + 1;
+        wb.setSheetName(i, k + name);
+        
+        sh.addMergedRegion(new CellRangeAddress(1, 1, 1, 8));
+        sh.addMergedRegion(new CellRangeAddress(3, 3, 1, 8));
+        sh.addMergedRegion(new CellRangeAddress(4, 4, 1, 2));
+        sh.addMergedRegion(new CellRangeAddress(4, 4, 3, 8));
+        sh.addMergedRegion(new CellRangeAddress(5, 5, 1, 2));
+        sh.addMergedRegion(new CellRangeAddress(5, 5, 3, 4));
+        sh.addMergedRegion(new CellRangeAddress(5, 5, 5, 6));
+        sh.addMergedRegion(new CellRangeAddress(5, 5, 7, 8));
+        sh.addMergedRegion(new CellRangeAddress(6, 6, 1, 2));
+        sh.addMergedRegion(new CellRangeAddress(6, 6, 3, 4));
+        sh.addMergedRegion(new CellRangeAddress(6, 6, 5, 6));
+        sh.addMergedRegion(new CellRangeAddress(6, 6, 7, 8));
+        sh.addMergedRegion(new CellRangeAddress(7, 7, 1, 2));
+        sh.addMergedRegion(new CellRangeAddress(7, 7, 3, 4));
+        sh.addMergedRegion(new CellRangeAddress(7, 7, 5, 6));
+        sh.addMergedRegion(new CellRangeAddress(7, 7, 7, 8));
+        sh.addMergedRegion(new CellRangeAddress(8, 8, 1, 2));
+        sh.addMergedRegion(new CellRangeAddress(8, 8, 3, 8));
+        
+        Row r = sh.createRow(0);
+        Cell c = r.createCell(0);
+        
+        r = sh.createRow(1);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue((String)((Map)templateName.get(0)).get("survey_name"));
+        c.setCellStyle(head);
+        
+        r = sh.createRow(3);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue("1. ��������");
+        c.setCellStyle(titleth);
+        
+        r = sh.createRow(4);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue("���� ������");
+        c.setCellStyle(th);
+        
+        c = r.createCell(2);
+        c.setCellStyle(td);
+        
+        c = r.createCell(3);
+        sh.setColumnWidth(3, sh.getColumnWidth(3) + 3000);
+        c.setCellValue((String)currData.get("currname"));
+        c.setCellStyle(td);
+        
+        c = r.createCell(4);
+        c.setCellStyle(td);
+        
+        c = r.createCell(5);
+        c.setCellStyle(td);
+        
+        c = r.createCell(6);
+        c.setCellStyle(td);
+        
+        c = r.createCell(7);
+        c.setCellStyle(td);
+        
+        c = r.createCell(8);
+        c.setCellStyle(td);
+        
+        r = sh.createRow(5);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue("������ ����");
+        c.setCellStyle(th);
+        
+        c = r.createCell(2);
+        c.setCellStyle(td);
+        
+        c = r.createCell(3);
+        c.setCellValue(name);
+        c.setCellStyle(td);
+        
+        c = r.createCell(4);
+        c.setCellStyle(td);
+        
+        c = r.createCell(5);
+        c.setCellValue("����/����");
+        c.setCellStyle(th);
+        
+        c = r.createCell(6);
+        c.setCellStyle(td);
+        
+        c = r.createCell(7);
+        c.setCellValue(genderList[i] + "/" + ageList[i]);
+        c.setCellStyle(td);
+        
+        c = r.createCell(8);
+        c.setCellStyle(td);
+        
+        r = sh.createRow(6);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue("������");
+        c.setCellStyle(th);
+        
+        c = r.createCell(2);
+        c.setCellStyle(td);
+        
+        c = r.createCell(3);
+        c.setCellValue(((Map)data.get(i)).get("mobile"));
+        c.setCellStyle(td);
+        
+        c = r.createCell(4);
+        c.setCellStyle(td);
+        
+        c = r.createCell(5);
+        c.setCellValue("����������(����)");
+        c.setCellStyle(th);
+        
+        c = r.createCell(6);
+        c.setCellStyle(td);
+        
+        c = r.createCell(7);
+        c.setCellValue(((Map)data.get(i)).get("emer_tel") + "(" + ((Map)data.get(i)).get("emer_relation") + ")");
+        c.setCellStyle(td);
+        
+        c = r.createCell(8);
+        c.setCellStyle(td);
+        
+        r = sh.createRow(7);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue("E-mail");
+        c.setCellStyle(th);
+        
+        c = r.createCell(2);
+        c.setCellStyle(td);
+        
+        c = r.createCell(3);
+        c.setCellValue(((Map)data.get(i)).get("email"));
+        c.setCellStyle(td);
+        
+        c = r.createCell(4);
+        c.setCellStyle(td);
+        
+        c = r.createCell(5);
+        c.setCellValue("��������");
+        c.setCellStyle(th);
+        
+        c = r.createCell(6);
+        c.setCellStyle(td);
+        
+        c = r.createCell(7);
+        c.setCellValue(((Map)data.get(i)).get("comaca"));
+        c.setCellStyle(td);
+        
+        c = r.createCell(8);
+        c.setCellStyle(td);
+        
+        r = sh.createRow(8);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue("������ ����");
+        c.setCellStyle(th);
+        
+        c = r.createCell(2);
+        c.setCellStyle(td);
+        
+        c = r.createCell(3);
+        c.setCellValue(((Map)data.get(i)).get("license"));
+        c.setCellStyle(td);
+        
+        c = r.createCell(4);
+        c.setCellStyle(td);
+        
+        c = r.createCell(5);
+        c.setCellStyle(th);
+        
+        c = r.createCell(6);
+        c.setCellStyle(td);
+        
+        c = r.createCell(7);
+        c.setCellStyle(td);
+        
+        c = r.createCell(8);
+        c.setCellStyle(td);
+        
+        int count = 9;
+        if (list != null) {
+          for (int j = 0; j < list.size(); j++) {
+            if (((Map)data.get(i)).get("no").equals(((Map)list.get(j)).get("stdt_no")))
+            {
+              int index = -1;
+              for (int h = 0; h < qData.size(); h++)
+              {
+                count++;
+                String[] s_answer = ((String)((Map)list.get(j)).get("result")).split("��");
+                String q_no = (String)((Map)qData.get(h)).get("q_no");
+                List aList = new ArrayList();
+                q_no = (String)((Map)qData.get(h)).get("q_no");
+                
+                sh.addMergedRegion(new CellRangeAddress(count, count, 1, 8));
+                r = sh.createRow(count);
+                r.setHeight((short)400);
+                c = r.createCell(1);
+                c.setCellValue(h + 2 + ". " + ((Map)qData.get(h)).get("question"));
+                c.setCellStyle(titleth);
+                if ("1".equals(((Map)qData.get(h)).get("question_form")))
+                {
+                  List<Map<String, Object>> sList = (List)((Map)qData.get(h)).get("sList");
+                  if (h != 1)
+                  {
+                    count++;
+                    sh.addMergedRegion(new CellRangeAddress(count, count, 1, 2));
+                    sh.addMergedRegion(new CellRangeAddress(count, count, 3, 6));
+                    sh.addMergedRegion(new CellRangeAddress(count, count, 7, 8));
+                    
+                    r = sh.createRow(count);
+                    r.setHeight((short)400);
+                    c = r.createCell(1);
+                    c.setCellValue(h == 0 ? "����" : "����");
+                    c.setCellStyle(th);
+                    
+                    c = r.createCell(2);
+                    c.setCellStyle(td);
+                    
+                    c = r.createCell(3);
+                    c.setCellValue(h == 0 ? "����" : "����");
+                    c.setCellStyle(th);
+                    
+                    c = r.createCell(4);
+                    c.setCellStyle(td);
+                    
+                    c = r.createCell(5);
+                    c.setCellStyle(td);
+                    
+                    c = r.createCell(6);
+                    c.setCellStyle(td);
+                    
+                    c = r.createCell(7);
+                    c.setCellValue(h == 0 ? "����" : "����");
+                    c.setCellStyle(th);
+                    
+                    c = r.createCell(8);
+                    c.setCellStyle(td);
+                  }
+                  for (int h2 = 0; h2 < sList.size(); h2++)
+                  {
+                    int row_count = ((Integer)((Map)sList.get(h2)).get("count")).intValue();
+                    if (h != 1)
+                    {
+                      count++;
+                      
+                      sh.addMergedRegion(new CellRangeAddress(count, count + (row_count != 0 ? row_count - 1 : 0), 1, 2));
+                      sh.addMergedRegion(new CellRangeAddress(count, count, 3, 6));
+                      sh.addMergedRegion(new CellRangeAddress(count, count, 7, 8));
+                      
+                      r = sh.createRow(count);
+                      r.setHeight((short)400);
+                      c = r.createCell(1);
+                      c.setCellValue(((Map)sList.get(h2)).get("question"));
+                      c.setCellStyle(th);
+                      
+                      c = r.createCell(2);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(3);
+                      if (row_count > 0)
+                      {
+                        List<Map<String, Object>> bList = (List)((Map)sList.get(h2)).get("bList");
+                        for (int h3 = 0; h3 < bList.size(); h3++)
+                        {
+                          List<Map<String, Object>> bList2 = (List)bList.get(h3);
+                          for (int h4 = 0; h4 < 1; h4++)
+                          {
+                            index++;
+                            c.setCellValue(((Map)bList2.get(h4)).get("question"));
+                          }
+                        }
+                      }
+                      else
+                      {
+                        index++;
+                        c.setCellValue("");
+                      }
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(4);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(5);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(6);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(7);
+                      if (row_count > 0)
+                      {
+                        List<Map<String, Object>> bList = (List)((Map)sList.get(h2)).get("bList");
+                        for (int h3 = 0; h3 < bList.size(); h3++)
+                        {
+                          List<Map<String, Object>> bList2 = (List)bList.get(h3);
+                          for (int h4 = 0; h4 < 1; h4++)
+                          {
+                            List<Map<String, Object>> aList2 = (List)((Map)bList2.get(h4)).get("aList");
+                            for (int h5 = 0; h5 < aList2.size(); h5++) {
+                              if (((Map)aList2.get(h5)).get("a_no").equals(s_answer[index])) {
+                                c.setCellValue(((Map)aList2.get(h5)).get("answer"));
+                              }
+                            }
+                          }
+                        }
+                      }
+                      else
+                      {
+                        c.setCellValue(s_answer[index]);
+                      }
+                      c.setCellStyle(th);
+                      
+                      c = r.createCell(8);
+                      c.setCellStyle(td);
+                    }
+                    else
+                    {
+                      count++;
+                      
+                      sh.addMergedRegion(new CellRangeAddress(count, count + (row_count != 0 ? row_count - 1 : 0), 1, 2));
+                      sh.addMergedRegion(new CellRangeAddress(count, count, 3, 8));
+                      
+                      r = sh.createRow(count);
+                      r.setHeight((short)400);
+                      c = r.createCell(1);
+                      c.setCellValue(((Map)sList.get(h2)).get("question"));
+                      c.setCellStyle(th);
+                      
+                      c = r.createCell(2);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(3);
+                      if (row_count > 0)
+                      {
+                        List<Map<String, Object>> bList = (List)((Map)sList.get(h2)).get("bList");
+                        for (int h3 = 0; h3 < bList.size(); h3++)
+                        {
+                          List<Map<String, Object>> bList2 = (List)bList.get(h3);
+                          for (int h4 = 0; h4 < 1; h4++)
+                          {
+                            index++;
+                            String s_question = (String)((Map)bList2.get(h4)).get("question");
+                            if ("���� ���� ����".equals(((Map)sList.get(h2)).get("question")))
+                            {
+                              c.setCellValue(s_question.split("_")[0] + " " + s_answer[index].replaceAll("��", " "));
+                            }
+                            else
+                            {
+                              List<Map<String, Object>> aList2 = (List)((Map)bList2.get(h4)).get("aList");
+                              for (int h5 = 0; h5 < aList2.size(); h5++) {
+                                if (((Map)aList2.get(h5)).get("a_no").equals(s_answer[index])) {
+                                  c.setCellValue(s_question.split("_")[0] + " " + ((Map)aList2.get(h5)).get("answer") + " " + (s_question.split("_").length > 1 ? s_question.split("_")[1] : ""));
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                      else
+                      {
+                        index++;
+                        c.setCellValue(s_answer[index]);
+                      }
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(4);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(5);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(6);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(7);
+                      c.setCellStyle(td);
+                      
+                      c = r.createCell(8);
+                      c.setCellStyle(td);
+                    }
+                    if (row_count > 1)
+                    {
+                      List<Map<String, Object>> bList = (List)((Map)sList.get(h2)).get("bList");
+                      for (int h3 = 0; h3 < bList.size(); h3++)
+                      {
+                        List<Map<String, Object>> bList2 = (List)bList.get(h3);
+                        for (int h4 = 1; h4 < bList2.size(); h4++)
+                        {
+                          index++;
+                          count++;
+                          if (h != 1)
+                          {
+                            sh.addMergedRegion(new CellRangeAddress(count, count, 3, 6));
+                            sh.addMergedRegion(new CellRangeAddress(count, count, 7, 8));
+                          }
+                          else
+                          {
+                            sh.addMergedRegion(new CellRangeAddress(count, count, 3, 8));
+                          }
+                          r = sh.createRow(count);
+                          r.setHeight((short)400);
+                          c = r.createCell(1);
+                          c.setCellValue(((Map)sList.get(h2)).get("question"));
+                          c.setCellStyle(th);
+                          
+                          c = r.createCell(2);
+                          c.setCellStyle(td);
+                          
+                          c = r.createCell(3);
+                          if (h != 1)
+                          {
+                            c.setCellValue(((Map)bList2.get(h4)).get("question"));
+                          }
+                          else if (row_count > 0)
+                          {
+                            String s_question = (String)((Map)bList2.get(h4)).get("question");
+                            if ("���� ���� ����".equals(((Map)sList.get(h2)).get("question")))
+                            {
+                              c.setCellValue(s_question.split("_")[0] + " " + s_answer[index].replaceAll("��", " "));
+                            }
+                            else
+                            {
+                              List<Map<String, Object>> aList2 = (List)((Map)bList2.get(h4)).get("aList");
+                              for (int h5 = 0; h5 < aList2.size(); h5++) {
+                                if (((Map)aList2.get(h5)).get("a_no").equals(s_answer[index])) {
+                                  c.setCellValue(s_question.split("_")[0] + " " + ((Map)aList2.get(h5)).get("answer") + " " + (s_question.split("_").length > 1 ? s_question.split("_")[1] : ""));
+                                }
+                              }
+                            }
+                          }
+                          else
+                          {
+                            index++;
+                            c.setCellValue(s_answer[index]);
+                          }
+                          c.setCellStyle(td);
+                          
+                          c = r.createCell(4);
+                          c.setCellStyle(td);
+                          
+                          c = r.createCell(5);
+                          c.setCellStyle(td);
+                          
+                          c = r.createCell(6);
+                          c.setCellStyle(td);
+                          
+                          c = r.createCell(7);
+                          if (h != 1) {
+                            if (row_count > 0)
+                            {
+                              List<Map<String, Object>> aList2 = (List)((Map)bList2.get(h4)).get("aList");
+                              for (int h5 = 0; h5 < aList2.size(); h5++) {
+                                if (((Map)aList2.get(h5)).get("a_no").equals(s_answer[index])) {
+                                  c.setCellValue(((Map)aList2.get(h5)).get("answer"));
+                                }
+                              }
+                            }
+                            else
+                            {
+                              c.setCellValue(s_answer[index]);
+                            }
+                          }
+                          c.setCellStyle(th);
+                          
+                          c = r.createCell(8);
+                          c.setCellStyle(td);
+                        }
+                      }
+                    }
+                  }
+                }
+                else if ("0".equals(((Map)qData.get(h)).get("answer")))
+                {
+                  index++;
+                  count++;
+                  
+                  sh.addMergedRegion(new CellRangeAddress(count, count, 1, 8));
+                  
+                  r = sh.createRow(count);
+                  r.setHeight((short)1000);
+                  c = r.createCell(1);
+                  c.setCellValue(s_answer[index]);
+                  c.setCellStyle(th);
+                  
+                  c = r.createCell(2);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(3);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(4);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(5);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(6);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(7);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(8);
+                  c.setCellStyle(td);
+                }
+                count++;
+              }
+            }
+          }
+        }
+      }
+    }
+    return wb;
+  }
+  
+  private int findResNo(String param_res_no, List<Map<String, Object>> data)
+  {
+    int index = -1;
+    for (int i = 0; i < data.size(); i++)
+    {
+      String stdt_res_no = String.valueOf(((Map)data.get(i)).get("res_no"));
+      if (param_res_no.equals(stdt_res_no))
+      {
+        index = i;
+        break;
+      }
+    }
+    return index;
+  }
+  
+  public Workbook excelLayout2_4(List<Map<String, String>> templateName, List<Map<String, Object>> qData, List<Map<String, String>> aData, List<Map<String, Object>> data, List<Map<String, String>> list, Map<String, String> currData, String degree)
+  {
+    Workbook wb = new SXSSFWorkbook();
+    SXSSFSheet sh = (SXSSFSheet)wb.createSheet();
+    
+    Font font = wb.createFont();
+    font.setFontHeightInPoints((short)9);
+    font.setFontName("���� ����");
+    
+    CellStyle th = wb.createCellStyle();
+    th.setVerticalAlignment((short)1);
+    th.setAlignment((short)2);
+    th.setWrapText(true);
+    th.setBorderTop((short)1);
+    th.setTopBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderBottom((short)1);
+    th.setBottomBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderLeft((short)1);
+    th.setLeftBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderRight((short)1);
+    th.setRightBorderColor((short)Color.BLACK.getRGB());
+    th.setFont(font);
+    
+    CellStyle td = wb.createCellStyle();
+    td.setVerticalAlignment((short)1);
+    td.setAlignment((short)1);
+    td.setWrapText(true);
+    td.setBorderTop((short)1);
+    td.setBorderBottom((short)1);
+    td.setBorderRight((short)1);
+    td.setBorderLeft((short)1);
+    td.setTopBorderColor((short)Color.BLACK.getRGB());
+    td.setBottomBorderColor((short)Color.BLACK.getRGB());
+    td.setRightBorderColor((short)Color.BLACK.getRGB());
+    td.setLeftBorderColor((short)Color.BLACK.getRGB());
+    td.setFont(font);
+    
+    CellStyle head = wb.createCellStyle();
+    head.setVerticalAlignment((short)1);
+    head.setAlignment((short)2);
+    head.setWrapText(true);
+    head.setBorderTop((short)0);
+    head.setBorderBottom((short)0);
+    head.setBorderLeft((short)0);
+    head.setBorderRight((short)0);
+    head.setFont(font);
+    
+    sh.addMergedRegion(new CellRangeAddress(1, 1, 1, 8));
+    sh.addMergedRegion(new CellRangeAddress(3, 3, 1, 2));
+    sh.addMergedRegion(new CellRangeAddress(3, 3, 3, 8));
+    sh.addMergedRegion(new CellRangeAddress(4, 4, 1, 2));
+    sh.addMergedRegion(new CellRangeAddress(4, 4, 3, 4));
+    sh.addMergedRegion(new CellRangeAddress(4, 4, 5, 6));
+    sh.addMergedRegion(new CellRangeAddress(4, 4, 7, 8));
+    
+    Row r = sh.createRow(0);
+    Cell c = r.createCell(0);
+    
+    r = sh.createRow(1);
+    r.setHeight((short)400);
+    c = r.createCell(1);
+    c.setCellValue((String)((Map)templateName.get(0)).get("survey_name"));
+    c.setCellStyle(head);
+    
+    r = sh.createRow(3);
+    sh.setColumnWidth(1, sh.getColumnWidth(1) + 1500);
+    r.setHeight((short)400);
+    c = r.createCell(1);
+    c.setCellValue("����������");
+    c.setCellStyle(th);
+    
+    c = r.createCell(2);
+    c.setCellStyle(td);
+    
+    c = r.createCell(3);
+    c.setCellValue((String)currData.get("currname"));
+    c.setCellStyle(td);
+    
+    c = r.createCell(4);
+    c.setCellStyle(td);
+    
+    c = r.createCell(5);
+    c.setCellStyle(td);
+    
+    c = r.createCell(6);
+    c.setCellStyle(td);
+    
+    c = r.createCell(7);
+    c.setCellStyle(td);
+    
+    c = r.createCell(8);
+    c.setCellStyle(td);
+    
+    r = sh.createRow(4);
+    r.setHeight((short)400);
+    c = r.createCell(1);
+    c.setCellValue("������");
+    c.setCellStyle(th);
+    
+    c = r.createCell(2);
+    c.setCellStyle(td);
+    
+    c = r.createCell(3);
+    c.setCellValue((String)currData.get("prof"));
+    c.setCellStyle(td);
+    
+    c = r.createCell(4);
+    c.setCellStyle(td);
+    
+    c = r.createCell(5);
+    c.setCellValue("��������");
+    c.setCellStyle(td);
+    
+    c = r.createCell(6);
+    c.setCellStyle(td);
+    
+    c = r.createCell(7);
+    c.setCellValue((String)currData.get("empl_charge"));
+    c.setCellStyle(td);
+    
+    c = r.createCell(8);
+    c.setCellStyle(td);
+    
+    int count = 5;
+    for (int i = 0; i < qData.size(); i++)
+    {
+      String q_answer = (String)((Map)qData.get(i)).get("answer");
+      if (("2".equals(degree)) || ((!"0".equals(q_answer)) && ("4".equals(degree))))
+      {
+        count++;
+        sh.addMergedRegion(new CellRangeAddress(count, count, 1, 8));
+        
+        r = sh.createRow(count);
+        r.setHeight((short)400);
+        c = r.createCell(1);
+        c.setCellValue(i + 1 + ". " + ((Map)qData.get(i)).get("question"));
+        c.setCellStyle(td);
+        
+        c = r.createCell(2);
+        c.setCellStyle(td);
+        
+        c = r.createCell(3);
+        c.setCellStyle(td);
+        
+        c = r.createCell(4);
+        c.setCellStyle(td);
+        
+        c = r.createCell(5);
+        c.setCellStyle(td);
+        
+        c = r.createCell(6);
+        c.setCellStyle(td);
+        
+        c = r.createCell(7);
+        c.setCellStyle(td);
+        
+        c = r.createCell(8);
+        c.setCellStyle(td);
+        if (!"0".equals(q_answer))
+        {
+          count++;
+          sh.addMergedRegion(new CellRangeAddress(count, count, 1, 2));
+          sh.addMergedRegion(new CellRangeAddress(count, count, 3, 4));
+          sh.addMergedRegion(new CellRangeAddress(count, count, 5, 6));
+          sh.addMergedRegion(new CellRangeAddress(count, count, 7, 8));
+          
+          r = sh.createRow(count);
+          c = r.createCell(1);
+          c.setCellValue("��������");
+          c.setCellStyle(th);
+          
+          c = r.createCell(2);
+          c.setCellStyle(td);
+          
+          c = r.createCell(3);
+          c.setCellValue("������");
+          c.setCellStyle(th);
+          
+          c = r.createCell(4);
+          c.setCellStyle(td);
+          
+          c = r.createCell(5);
+          c.setCellValue("��������");
+          c.setCellStyle(th);
+          
+          c = r.createCell(6);
+          c.setCellStyle(td);
+          
+          c = r.createCell(7);
+          c.setCellValue("����");
+          c.setCellStyle(th);
+          
+          c = r.createCell(8);
+          c.setCellStyle(td);
+        }
+        String[] answer_arr = new String[qData.size()];
+        String answer = "";
+        String stdt_name = "";
+        if (("0".equals(q_answer)) && ("2".equals(degree)))
+        {
+          if (list != null)
+          {
+            for (int k = 0; k < list.size(); k++)
+            {
+              answer_arr = ((String)((Map)list.get(k)).get("result")).split("��");
+              answer = answer + (String)((Map)list.get(k)).get("name") + " : " + answer_arr[i] + "\n";
+            }
+            count++;
+            sh.addMergedRegion(new CellRangeAddress(count, count, 1, 8));
+            
+            r = sh.createRow(count);
+            r.setHeight((short)1500);
+            c = r.createCell(1);
+            c.setCellValue(answer);
+            c.setCellStyle(td);
+            
+            c = r.createCell(2);
+            c.setCellStyle(td);
+            
+            c = r.createCell(3);
+            c.setCellValue(stdt_name);
+            c.setCellStyle(th);
+            
+            c = r.createCell(4);
+            c.setCellStyle(td);
+            
+            c = r.createCell(5);
+            c.setCellStyle(th);
+            
+            c = r.createCell(6);
+            c.setCellStyle(td);
+            
+            c = r.createCell(7);
+            c.setCellValue("����");
+            c.setCellStyle(th);
+            
+            c = r.createCell(8);
+            c.setCellStyle(td);
+          }
+        }
+        else {
+          for (int j = 0; j < aData.size(); j++)
+          {
+            stdt_name = "";
+            int total_count = 0;
+            double all_count = 0.0D;
+            if (list != null) {
+              for (int k2 = 0; k2 < list.size(); k2++)
+              {
+                answer_arr = ((String)((Map)list.get(k2)).get("result")).split("��");
+                if (answer_arr[i].split("��")[0].equals(((Map)aData.get(j)).get("a_no")))
+                {
+                  stdt_name = stdt_name + (String)((Map)list.get(k2)).get("name") + ", ";
+                  total_count++;
+                }
+                all_count += 1.0D;
+              }
+            }
+            if (((Map)qData.get(i)).get("q_no").equals(((Map)aData.get(j)).get("q_no")))
+            {
+              count++;
+              sh.addMergedRegion(new CellRangeAddress(count, count, 1, 2));
+              sh.addMergedRegion(new CellRangeAddress(count, count, 3, 4));
+              sh.addMergedRegion(new CellRangeAddress(count, count, 5, 6));
+              sh.addMergedRegion(new CellRangeAddress(count, count, 7, 8));
+              
+              r = sh.createRow(count);
+              c = r.createCell(1);
+              c.setCellValue((String)((Map)aData.get(j)).get("answer"));
+              c.setCellStyle(th);
+              
+              c = r.createCell(2);
+              c.setCellStyle(td);
+              
+              c = r.createCell(3);
+              c.setCellValue(stdt_name);
+              c.setCellStyle(th);
+              
+              c = r.createCell(4);
+              c.setCellStyle(td);
+              
+              c = r.createCell(5);
+              c.setCellValue(total_count);
+              c.setCellStyle(th);
+              
+              c = r.createCell(6);
+              c.setCellStyle(td);
+              double percent = all_count / 100.0D;
+              int all_percent = (int)(total_count != 0 ? total_count / percent : 0.0D);
+              
+              c = r.createCell(7);
+              c.setCellValue(all_percent + "%");
+              c.setCellStyle(th);
+              
+              c = r.createCell(8);
+              c.setCellStyle(td);
+            }
+          }
+        }
+      }
+    }
+    return wb;
+  }
+  
+  public Workbook excelLayout5(List<Map<String, String>> templateName, List<Map<String, Object>> qData, List<Map<String, String>> aData, List<Map<String, Object>> data, List<Map<String, String>> list, Map<String, String> currData, String survey_date)
+  {
+    Workbook wb = new SXSSFWorkbook();
+    SXSSFSheet sh = null;
+    
+    Font font = wb.createFont();
+    font.setFontHeightInPoints((short)9);
+    font.setFontName("���� ����");
+    
+    Font fontHead = wb.createFont();
+    fontHead.setFontHeightInPoints((short)14);
+    fontHead.setFontName("���� ����");
+    
+    CellStyle th = wb.createCellStyle();
+    th.setVerticalAlignment((short)1);
+    th.setAlignment((short)2);
+    th.setWrapText(true);
+    th.setBorderTop((short)1);
+    th.setTopBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderBottom((short)1);
+    th.setBottomBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderLeft((short)1);
+    th.setLeftBorderColor((short)Color.BLACK.getRGB());
+    th.setBorderRight((short)1);
+    th.setRightBorderColor((short)Color.BLACK.getRGB());
+    th.setFont(font);
+    
+    CellStyle checkth = wb.createCellStyle();
+    checkth.setVerticalAlignment((short)1);
+    checkth.setAlignment((short)2);
+    checkth.setWrapText(true);
+    checkth.setBorderTop((short)1);
+    checkth.setTopBorderColor((short)Color.BLACK.getRGB());
+    checkth.setBorderBottom((short)1);
+    checkth.setBottomBorderColor((short)Color.BLACK.getRGB());
+    checkth.setBorderLeft((short)1);
+    checkth.setLeftBorderColor((short)Color.BLACK.getRGB());
+    checkth.setBorderRight((short)1);
+    checkth.setRightBorderColor((short)Color.BLACK.getRGB());
+    checkth.setFont(font);
+    checkth.setFillForegroundColor((short)55);
+    checkth.setFillPattern((short)1);
+    
+    CellStyle td = wb.createCellStyle();
+    td.setVerticalAlignment((short)1);
+    td.setAlignment((short)1);
+    td.setWrapText(true);
+    td.setBorderTop((short)1);
+    td.setBorderBottom((short)1);
+    td.setBorderRight((short)1);
+    td.setBorderLeft((short)1);
+    td.setTopBorderColor((short)Color.BLACK.getRGB());
+    td.setBottomBorderColor((short)Color.BLACK.getRGB());
+    td.setRightBorderColor((short)Color.BLACK.getRGB());
+    td.setLeftBorderColor((short)Color.BLACK.getRGB());
+    td.setFont(font);
+    
+    CellStyle centertd = wb.createCellStyle();
+    centertd.setVerticalAlignment((short)1);
+    centertd.setAlignment((short)2);
+    centertd.setWrapText(true);
+    centertd.setBorderTop((short)1);
+    centertd.setBorderBottom((short)1);
+    centertd.setBorderRight((short)1);
+    centertd.setBorderLeft((short)1);
+    centertd.setTopBorderColor((short)Color.BLACK.getRGB());
+    centertd.setBottomBorderColor((short)Color.BLACK.getRGB());
+    centertd.setRightBorderColor((short)Color.BLACK.getRGB());
+    centertd.setLeftBorderColor((short)Color.BLACK.getRGB());
+    centertd.setFont(font);
+    
+    CellStyle checktd = wb.createCellStyle();
+    checktd.setVerticalAlignment((short)1);
+    checktd.setAlignment((short)1);
+    checktd.setWrapText(true);
+    checktd.setBorderTop((short)1);
+    checktd.setBorderBottom((short)1);
+    checktd.setBorderRight((short)1);
+    checktd.setBorderLeft((short)1);
+    checktd.setTopBorderColor((short)Color.BLACK.getRGB());
+    checktd.setBottomBorderColor((short)Color.BLACK.getRGB());
+    checktd.setRightBorderColor((short)Color.BLACK.getRGB());
+    checktd.setLeftBorderColor((short)Color.BLACK.getRGB());
+    checktd.setFont(font);
+    checktd.setFillForegroundColor((short)13);
+    checktd.setFillPattern((short)1);
+    
+    CellStyle head = wb.createCellStyle();
+    head.setVerticalAlignment((short)1);
+    head.setAlignment((short)2);
+    head.setWrapText(true);
+    head.setBorderTop((short)0);
+    head.setBorderBottom((short)0);
+    head.setBorderLeft((short)0);
+    head.setBorderRight((short)0);
+    head.setFont(fontHead);
+    
+    CellStyle rightHead = wb.createCellStyle();
+    rightHead.setVerticalAlignment((short)1);
+    rightHead.setAlignment((short)3);
+    rightHead.setWrapText(true);
+    rightHead.setBorderTop((short)0);
+    rightHead.setBorderBottom((short)0);
+    rightHead.setBorderLeft((short)0);
+    rightHead.setBorderRight((short)0);
+    rightHead.setFont(font);
+    if (data.size() > 0) {
+      for (int i = 0; i < data.size(); i++)
+      {
+        String name = ((Map)data.get(i)).get("name").toString();
+        sh = (SXSSFSheet)wb.createSheet();
+        int k = i + 1;
+        wb.setSheetName(i, k + name);
+        
+        sh.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+        sh.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
+        sh.addMergedRegion(new CellRangeAddress(5, 5, 0, 6));
+        
+        Row r = sh.createRow(0);
+        Cell c = r.createCell(0);
+        
+        r.setHeight((short)400);
+        c.setCellValue((String)((Map)templateName.get(0)).get("survey_name"));
+        c.setCellStyle(head);
+        
+        r = sh.createRow(1);
+        c = r.createCell(0);
+        r.setHeight((short)400);
+        c.setCellValue("������ : " + survey_date);
+        c.setCellStyle(rightHead);
+        
+        r = sh.createRow(3);
+        sh.setColumnWidth(0, sh.getColumnWidth(1) + 1500);
+        r.setHeight((short)400);
+        c = r.createCell(0);
+        c.setCellValue("������");
+        c.setCellStyle(checkth);
+        
+        c = r.createCell(1);
+        c.setCellValue((String)currData.get("classroom") + "������");
+        c.setCellStyle(td);
+        
+        c = r.createCell(2);
+        c.setCellValue("����");
+        c.setCellStyle(checkth);
+        
+        c = r.createCell(3);
+        c.setCellValue(name);
+        c.setCellStyle(td);
+        
+        r = sh.createRow(5);
+        c = r.createCell(0);
+        c.setCellValue("������ �� ������ ���� �������� ������ ������ ��������. ");
+        c.setCellStyle(head);
+        
+        int count = 6;
+        if (list != null) {
+          for (int j = 0; j < list.size(); j++) {
+            if (((Map)data.get(i)).get("no").equals(((Map)list.get(j)).get("stdt_no"))) {
+              for (int h = 0; h < qData.size(); h++)
+              {
+                String[] s_answer = ((String)((Map)list.get(j)).get("result")).split("��");
+                String q_no = (String)((Map)qData.get(h)).get("q_no");
+                List aList = new ArrayList();
+                q_no = (String)((Map)qData.get(h)).get("q_no");
+                if ("0".equals(((Map)qData.get(h)).get("answer")))
+                {
+                  count++;
+                  sh.addMergedRegion(new CellRangeAddress(count, count, 0, 6));
+                  
+                  r = sh.createRow(count);
+                  r.setHeight((short)700);
+                  c = r.createCell(0);
+                  c.setCellValue("Q. " + ((Map)qData.get(h)).get("question"));
+                  c.setCellStyle(centertd);
+                  
+                  c = r.createCell(1);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(2);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(3);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(4);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(5);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(6);
+                  c.setCellStyle(td);
+                  
+                  count++;
+                  sh.addMergedRegion(new CellRangeAddress(count, count, 0, 6));
+                  
+                  r = sh.createRow(count);
+                  r.setHeight((short)1000);
+                  c = r.createCell(0);
+                  c.setCellValue(s_answer[h]);
+                  c.setCellStyle(centertd);
+                  
+                  c = r.createCell(1);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(2);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(3);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(4);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(5);
+                  c.setCellStyle(td);
+                  
+                  c = r.createCell(6);
+                  c.setCellStyle(td);
+                }
+                else if (!"0".equals(((Map)qData.get(h)).get("answer")))
+                {
+                  if ((h == 0) || (h == 2))
+                  {
+                    count++;
+                    sh.addMergedRegion(new CellRangeAddress(count, count + 1, 0, 1));
+                    
+                    r = sh.createRow(count);
+                    r.setHeight((short)700);
+                    c = r.createCell(0);
+                    c.setCellValue(h + 1 + ". " + ((Map)qData.get(h)).get("question"));
+                    c.setCellStyle(td);
+                    
+                    c = r.createCell(1);
+                    c.setCellStyle(td);
+                    
+                    int index_count = 1;
+                    for (int j2 = 0; j2 < aData.size(); j2++) {
+                      if (((Map)qData.get(h)).get("q_no").equals(((Map)aData.get(j2)).get("q_no")))
+                      {
+                        index_count++;
+                        sh.setColumnWidth(index_count, sh.getColumnWidth(index_count) + 400);
+                        
+                        c = r.createCell(index_count);
+                        c.setCellValue((String)((Map)aData.get(j2)).get("a_no"));
+                        if (s_answer[h].equals(((Map)aData.get(j2)).get("a_no"))) {
+                          c.setCellStyle(checktd);
+                        } else {
+                          c.setCellStyle(centertd);
+                        }
+                      }
+                    }
+                    count++;
+                    r = sh.createRow(count);
+                    r.setHeight((short)700);
+                    c = r.createCell(0);
+                    c.setCellValue(h + 1 + ". " + ((Map)qData.get(h)).get("question"));
+                    c.setCellStyle(td);
+                    
+                    c = r.createCell(1);
+                    c.setCellStyle(td);
+                    
+                    index_count = 1;
+                    for (int j2 = 0; j2 < aData.size(); j2++) {
+                      if (((Map)qData.get(h)).get("q_no").equals(((Map)aData.get(j2)).get("q_no")))
+                      {
+                        index_count++;
+                        sh.setColumnWidth(index_count, sh.getColumnWidth(index_count) + 400);
+                        
+                        c = r.createCell(index_count);
+                        if (s_answer[h].split("��")[0].equals(((Map)aData.get(j2)).get("a_no")))
+                        {
+                          c.setCellValue((String)((Map)aData.get(j2)).get("answer") + (s_answer[h].split("��").length > 1 ? " ( " + s_answer[h].split("��")[1] + " )" : ""));
+                          c.setCellStyle(checktd);
+                        }
+                        else
+                        {
+                          c.setCellValue((String)((Map)aData.get(j2)).get("answer"));
+                          c.setCellStyle(td);
+                        }
+                      }
+                    }
+                  }
+                  else
+                  {
+                    count++;
+                    sh.addMergedRegion(new CellRangeAddress(count, count + 4, 0, 1));
+                    for (int j2 = 0; j2 < aData.size(); j2++) {
+                      if (((Map)qData.get(h)).get("q_no").equals(((Map)aData.get(j2)).get("q_no")))
+                      {
+                        sh.addMergedRegion(new CellRangeAddress(count, count, 2, 6));
+                        
+                        r = sh.createRow(count);
+                        r.setHeight((short)700);
+                        
+                        c = r.createCell(0);
+                        c.setCellValue(h + 1 + ". " + ((Map)qData.get(h)).get("question"));
+                        c.setCellStyle(td);
+                        
+                        c = r.createCell(1);
+                        c.setCellStyle(td);
+                        
+                        c = r.createCell(2);
+                        if (s_answer[h].split("��")[0].equals(((Map)aData.get(j2)).get("a_no")))
+                        {
+                          c.setCellValue((String)((Map)aData.get(j2)).get("a_no") + ". " + (String)((Map)aData.get(j2)).get("answer") + (s_answer[h].split("��").length > 1 ? " ( " + s_answer[h].split("��")[1] + " )" : ""));
+                          c.setCellStyle(checktd);
+                        }
+                        else
+                        {
+                          c.setCellValue((String)((Map)aData.get(j2)).get("a_no") + ". " + (String)((Map)aData.get(j2)).get("answer"));
+                          c.setCellStyle(td);
+                        }
+                        c = r.createCell(3);
+                        c.setCellStyle(td);
+                        
+                        c = r.createCell(4);
+                        c.setCellStyle(td);
+                        
+                        c = r.createCell(5);
+                        c.setCellStyle(td);
+                        
+                        c = r.createCell(6);
+                        c.setCellStyle(td);
+                        
+                        count++;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return wb;
+  }
+}
