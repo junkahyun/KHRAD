@@ -23,6 +23,7 @@
       }
       if ((params.get("surveing") == null) || (params.get("surveing") == "")) {
         params.put("surveing", "false");
+        
       }
       params.put("isSelect", "O");
       
