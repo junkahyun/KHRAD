@@ -1,0 +1,557 @@
+@RequestMapping({"/rad/recruit/empSurvey.kh"})
+  public ModelAndView empSurvey(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<String> list = null;
+    List<Map<String, String>> brList = null;
+    HttpSession session = req.getSession();
+    this.logger.debug("survey!!!!");
+    try
+    {
+      Map<String, String> user = (Map)req.getSession().getAttribute("aduser");
+      params.put("site_id", (String)user.get("site_id"));
+      if ((params.get("branch") == null) || (((String)params.get("branch")).trim().equals(""))) {
+        params.put("branch", Property.getProperty("default.branch"));
+      }
+      if ((params.get("cpage") == null) || (params.get("cpage") == "")) {
+        params.put("cpage", "1");
+      }
+      if ((params.get("search") == null) || (params.get("search") == "")) {
+        params.put("search", "DESC");
+      }
+      if ((params.get("surveing") == null) || (params.get("surveing") == "")) {
+        params.put("surveing", "false");
+      }
+      params.put("isSelect", "O");
+      
+      Map<String, String> temp = (Map)session.getAttribute("aduser");
+      params.put("role", (String)temp.get("role_code"));
+      params.put("is_manager", (String)user.get("is_manager"));
+      params.put("roleFirstLetter", ((String)temp.get("role_code")).substring(0, 1));
+      params.put("dept", (String)temp.get("dept"));
+      params.put("user_id", (String)temp.get("id"));
+      params.put("user_branch", (String)temp.get("branch"));
+      params.put("user_depart", (String)temp.get("depart"));
+      
+      String u_id = (String)temp.get("id");
+      if ((params.get("survey") != null) && (!((String)params.get("survey")).trim().equals(""))) {
+        params.put("survey", Utils.SQLInjection((String)params.get("survey")));
+      }
+      String branchQ = getBranchQuery(req, (String)params.get("branch"));
+      params.put("branchQuery", branchQ);
+      if ((params.get("searchValue") != null) && (!((String)params.get("searchValue")).trim().equals(""))) {
+        params.put("searchValue_", (String)params.get("searchValue"));
+      }
+      if ((params.get("searchKey") != null) && (!((String)params.get("searchKey")).trim().equals(""))) {
+        params.put("searchKey_", (String)params.get("searchKey"));
+      }
+      model.put("list", this.currService.selectSurvey(params));
+      model.put("brList", this.currService.selectBranch(null));
+      model.put("total", Integer.valueOf(this.currService.selectSurveyCount(params)));
+      model.put("params", params);
+      model.put("cpage", params.get("cpage"));
+      mav = new ModelAndView("/WEB-INF/jsp/rad/recruit/empSurvey/empSurvey.jsp", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("survey method error ", e);
+      model.put("message", "[취업설문조사 목록]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/recruit/surveyStatusChange.kh"})
+  public ModelAndView surveyStatusChange(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    try
+    {
+      Calendar cal = Calendar.getInstance();
+      String nowDate = cal.get(1);
+      if (cal.get(2) < 9) {
+        nowDate = nowDate + "0";
+      }
+      nowDate = nowDate + (cal.get(2) + 1);
+      if (cal.get(5) < 10) {
+        nowDate = nowDate + "0";
+      }
+      nowDate = nowDate + cal.get(5);
+      
+      String[] date_arr = ((String)params.get("emp_date")).split("_");
+      String[] end_arr = ((String)params.get("emp_end")).split("_");
+      int degree = Integer.parseInt((String)params.get("degree"));
+      String str1;
+      switch ((str1 = end_arr[(degree - 1)]).hashCode())
+      {
+      case 48: 
+        if (str1.equals("0")) {
+          break;
+        }
+        break;
+      case 49: 
+        if (str1.equals("1")) {}
+      case 50: 
+        if ((goto 342) && (str1.equals("2")))
+        {
+          end_arr[(degree - 1)] = "1";
+          break label342;
+          end_arr[(degree - 1)] = "2";
+        }
+        break;
+      }
+      label342:
+      date_arr[(degree - 1)] = nowDate;
+      String emp_date = date_arr[0] + "_" + date_arr[1] + "_" + date_arr[2] + "_" + date_arr[3];
+      String emp_end = end_arr[0] + "_" + end_arr[1] + "_" + end_arr[2] + "_" + end_arr[3];
+      
+      params.put("emp_date", emp_date);
+      params.put("emp_end", emp_end);
+      
+      int result = this.recruitService.updateEmpSurveyStatus(params);
+      
+      model.put("result", Integer.valueOf(result));
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("download method error", e);
+      model.put("message", "[취업설문조사 시작,종료]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/recruit/empSurveyView.kh"})
+  public ModelAndView empSurveyView(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, Object>> sList = null;
+    String firstStudent = null;
+    try
+    {
+      Map user = (Map)req.getSession().getAttribute("aduser");
+      
+      params.put("site_id", (String)user.get("site_id"));
+      if ((params.get("degree") == null) || (((String)params.get("degree")).equals(""))) {
+        params.put("degree", "1");
+      }
+      sList = this.currService.selectTimetableStdt(params);
+      if (sList != null)
+      {
+        if (sList.size() > 0) {
+          firstStudent = ((Map)sList.get(0)).get("no");
+        }
+        for (int i = 0; i < sList.size(); i++)
+        {
+          String res_no = (String)((Map)sList.get(i)).get("res_no");
+          ((Map)sList.get(i)).put("res_no", this.authorityManager.getDecryptString(res_no));
+        }
+      }
+      params.put("firstStudent", firstStudent);
+      model.put("curData", this.currService.selectTimetableStdtCurr(params));
+      model.put("sList", sList);
+      model.put("params", params);
+      
+      mav = new ModelAndView("/WEB-INF/jsp/rad/recruit/empSurvey/empSurveyView.jsp", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("surveyView method error ", e);
+      model.put("message", "[취업설문조사 결과 페이지]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/recruit/empSurveyResult.kh"})
+  public ModelAndView empSurveyResult(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, String>> list = null;
+    Map<String, String> data = null;
+    List<Map<String, String>> templateName = null;
+    List<Map<String, Object>> qData = null;
+    List<Map<String, Object>> qData2 = null;
+    List<Map<String, String>> aData = null;
+    String mode = "";
+    try
+    {
+      Map user = (Map)req.getSession().getAttribute("aduser");
+      
+      params.put("site_id", (String)user.get("site_id"));
+      
+      String[] dat = ((String)params.get("emp_survey_date")).split("_");
+      String[] template = ((String)params.get("template_no")).split("_");
+      int degree = Integer.parseInt((String)params.get("degree"));
+      
+      params.put("all_date", (String)params.get("emp_survey_date"));
+      params.put("template_no", template[(degree - 1)]);
+      params.put("survey_date", dat[(degree - 1)]);
+      
+      templateName = this.currService.selectSurveyTemplateName(params);
+      qData = this.currService.selectSurveyQ(params);
+      aData = this.currService.selectSurveyA(params);
+      list = this.currService.selectEmpSurveyView(params);
+      if (list != null) {
+        for (int i = 0; i < list.size(); i++)
+        {
+          String res_no = (String)((Map)list.get(i)).get("res_no");
+          ((Map)list.get(i)).put("res_no", this.authorityManager.getDecryptString(res_no));
+        }
+      }
+      params.put("no", (String)params.get("stdt_no"));
+      data = this.studentService.selectStudentView(params);
+      if (data != null) {
+        data.put("res_no", this.authorityManager.getDecryptString((String)data.get("res_no")));
+      }
+      qData2 = getMatchSurveyResult(qData, aData, params);
+      mode = "update".equals(params.get("mode")) ? "Modify" : "Result";
+      
+      model.put("template", templateName.get(0));
+      model.put("data", data);
+      model.put("list", list);
+      model.put("qData", qData2);
+      model.put("aData", aData);
+      model.put("qData_length", Integer.valueOf(qData.size()));
+      model.put("params", params);
+      
+      mav = new ModelAndView("/WEB-INF/jsp/rad/recruit/empSurvey/empSurvey" + mode + ".jsp", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("surveyView method error ", e);
+      model.put("message", "[취업설문결과 상세폼,수정폼]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  private List<Map<String, Object>> getMatchSurveyResult(List<Map<String, Object>> pData, List<Map<String, String>> aData, Map<String, String> params)
+  {
+    try
+    {
+      List<Map<String, Object>> qData = null;
+      List<Map<String, Object>> qData2 = null;
+      List<Map<String, String>> aData2 = null;
+      for (int i = 0; i < pData.size(); i++) {
+        if ("1".equals(String.valueOf(((Map)pData.get(i)).get("question_form"))))
+        {
+          String q_no = (String)((Map)pData.get(i)).get("q_no");
+          params.put("q_no", q_no);
+          params.put("q_title", "");
+          qData = this.currService.selectSurveyQ(params);
+          for (int s = 0; s < qData.size(); s++)
+          {
+            List aList = new ArrayList();
+            List bList = new ArrayList();
+            int count = 0;
+            q_no = (String)((Map)qData.get(s)).get("q_no");
+            params.put("q_no", q_no);
+            if ("-1".equals(((Map)qData.get(s)).get("answer")))
+            {
+              params.put("q_title", "q_title");
+              qData2 = this.currService.selectSurveyQ(params);
+              for (int q2 = 0; q2 < qData2.size(); q2++)
+              {
+                count++;
+                q_no = (String)((Map)qData2.get(q2)).get("q_no");
+                params.put("q_no", q_no);
+                aData2 = this.currService.selectSurveyA(params);
+                if (aData2.size() > 0)
+                {
+                  aList = new ArrayList();
+                  for (int j = 0; j < aData2.size(); j++) {
+                    aList.add(aData2.get(j));
+                  }
+                }
+                ((Map)qData2.get(q2)).put("aList", aList);
+              }
+              bList.add(qData2);
+            }
+            else
+            {
+              aData2 = this.currService.selectSurveyA(params);
+              if (aData2.size() > 0)
+              {
+                for (int j = 0; j < aData2.size(); j++)
+                {
+                  String answer_q_no = (String)((Map)aData2.get(j)).get("q_no");
+                  if (answer_q_no.equals(q_no)) {
+                    aList.add(aData2.get(j));
+                  }
+                }
+                ((Map)qData.get(s)).put("aList", aList);
+              }
+            }
+            ((Map)qData.get(s)).put("bList", bList);
+            ((Map)qData.get(s)).put("count", Integer.valueOf(count));
+          }
+          ((Map)pData.get(i)).put("sList", qData);
+        }
+        else
+        {
+          String q_no = (String)((Map)pData.get(i)).get("q_no");
+          List aList = new ArrayList();
+          q_no = (String)((Map)pData.get(i)).get("q_no");
+          for (int j = 0; j < aData.size(); j++)
+          {
+            String answer_q_no = (String)((Map)aData.get(j)).get("q_no");
+            if (answer_q_no.equals(q_no)) {
+              aList.add(aData.get(j));
+            }
+          }
+          ((Map)pData.get(i)).put("aList", aList);
+        }
+      }
+    }
+    catch (Exception e)
+    {
+      this.logger.error("getMathSurveyResult method error ", e);
+    }
+    return pData;
+  }
+  
+  @RequestMapping({"/rad/recruit/updateSurvey.kh"})
+  public ModelAndView saveSurvey(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    int result = 0;
+    this.logger.debug("updateSurvey!!!!");
+    try
+    {
+      params.put("result", ((String)params.get("result")).replaceAll("\n", "<br>"));
+      result = this.recruitService.updateEmpSurvey(params);
+      if (result == 0) {
+        result = this.recruitService.insertEmpSurvey(params);
+      }
+      model.put("result", Integer.valueOf(1));
+      
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("saveSurvey method error ", e);
+      model.put("message", "[취업설문조사 결과 페이지 수정]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("jsonView", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/recruit/empSurveyExcel.kh"})
+  public ModelAndView empSurveyExcel(HttpServletRequest req, HttpServletResponse res, @RequestParam("ch3") ArrayList<String> ch3)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    Map<String, String> currData = null;
+    List<Map<String, String>> list = null;
+    List<Map<String, Object>> data = null;
+    List<Map<String, String>> templateName = null;
+    List<Map<String, Object>> qData = null;
+    List<Map<String, String>> aData = null;
+    try
+    {
+      Map<String, String> user = (Map)req.getSession().getAttribute("aduser");
+      params.put("site_id", (String)user.get("site_id"));
+      
+      String[] dat = ((String)params.get("emp_survey_date")).split("_");
+      String[] template = ((String)params.get("template_no")).split("_");
+      int degree = Integer.parseInt((String)params.get("degree"));
+      String stdt_arr = ((String)params.get("stdt_arr")).substring(0, ((String)params.get("stdt_arr")).length());
+      String survey_date = dat[(degree - 1)];
+      
+      params.put("template_no", template[(degree - 1)]);
+      params.put("stdt_arr", stdt_arr.replaceAll(",", "|"));
+      
+      templateName = this.currService.selectSurveyTemplateName(params);
+      qData = this.currService.selectSurveyQ(params);
+      aData = this.currService.selectSurveyA(params);
+      data = this.currService.selectTimetableStdt(params);
+      currData = this.currService.selectTimetableStdtCurr(params);
+      list = this.currService.selectEmpSurveyView(params);
+      
+      Workbook wb = new SXSSFWorkbook();
+      RecruitSurveyExcel setting = new RecruitSurveyExcel();
+      String str1;
+      switch ((str1 = degree).hashCode())
+      {
+      case 49: 
+        if (str1.equals("1")) {
+          break;
+        }
+        break;
+      case 50: 
+        if (str1.equals("2")) {}
+        break;
+      case 51: 
+        if (str1.equals("3")) {}
+        break;
+      case 52: 
+        if (!str1.equals("4"))
+        {
+          break label570;
+          wb = setting.excelLayout1(templateName, qData, aData, data, list, currData);
+          break label570;
+          qData = getMatchSurveyResult(qData, aData, params);
+          wb = setting.excelLayout3(templateName, qData, data, list, currData, ch3);
+        }
+        else if ("all".equals(params.get("excel_down")))
+        {
+          wb = setting.excelLayout5(templateName, qData, aData, data, list, currData, survey_date);
+        }
+        else
+        {
+          wb = setting.excelLayout2_4(templateName, qData, aData, data, list, currData, degree);
+        }
+        break;
+      }
+      label570:
+      Calendar cal = Calendar.getInstance();
+      String month = "";
+      if (cal.get(2) < 9) {
+        month = month + "0";
+      }
+      month = month + (cal.get(2) + 1);
+      
+      String cnTemp = degree + "차 설문조사 결과 페이지 ";
+      
+      String realpath = req.getRealPath("/");
+      String filepath = realpath + Utils.getPropertyData("kh.upload.admcom.url");
+      String filename = cnTemp + "_" + cal.get(1) + month + "_" + System.currentTimeMillis() + ".xlsx";
+      
+      FileOutputStream fos = new FileOutputStream(filepath + filename);
+      wb.write(fos);
+      fos.close();
+      
+      model.put("saveFileName", filename);
+      filename = URLEncoder.encode(filename, "UTF8");
+      model.put("originalFileName", filename);
+      model.put("path", filepath);
+      model.put("idForAtt", "excel");
+      
+      model.put("cpage", params.get("cpage"));
+      mav = new ModelAndView("/WEB-INF/jsp/rad/notice/download.jsp", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("recruitExcel method error ", e);
+      model.put("message", "[취업설문결과 엑셀다운로드]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/recruit/empSurveyManage.kh"})
+  public ModelAndView empSurveyManage(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, String>> list = null;
+    try
+    {
+      if ((params.get("cpage") == null) || (params.get("cpage") == "")) {
+        params.put("cpage", "1");
+      }
+      list = this.currService.selectSurveyFormList(params);
+      
+      model.put("total", Integer.valueOf(this.currService.selectSurveyFormListCount(params)));
+      model.put("cpage", params.get("cpage"));
+      model.put("list", list);
+      model.put("params", params);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/recruit/empSurvey/empSurveyManage.jsp", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("surveyForm method error ", e);
+      model.put("message", "[취업설문관리 목록 페이지]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/recruit/empSurveyManageView.kh"})
+  public ModelAndView empSurveyManageView(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, Object>> qData = null;
+    List<Map<String, Object>> qData2 = null;
+    List<Map<String, String>> aData = null;
+    List<Map<String, String>> templateName = null;
+    try
+    {
+      Map<String, String> user = (Map)req.getSession().getAttribute("aduser");
+      params.put("site_id", (String)user.get("site_id"));
+      
+      templateName = this.currService.selectSurveyTemplateName(params);
+      qData = this.currService.selectSurveyQ(params);
+      aData = this.currService.selectSurveyA(params);
+      qData2 = getMatchSurveyResult(qData, aData, params);
+      
+      model.put("template", templateName.get(0));
+      model.put("qData", qData2);
+      model.put("params", params);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/recruit/empSurvey/empSurveyManageView.jsp", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("surveyForm method error ", e);
+      model.put("message", "[취업설문관리 상세 뷰]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/recruit/empSurveyManageForm.kh"})
+  public ModelAndView empSurveyManageForm(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    Map<String, Object> qCount = null;
+    List<Map<String, Object>> qData = null;
+    List<Map<String, Object>> qData2 = null;
+    List<Map<String, String>> aData = null;
+    List<Map<String, String>> sData = null;
+    try
+    {
+      sData = this.currService.selectSurveyTemplateName(params);
+      if ((!((String)params.get("mode")).equals("insert")) || ((params.get("preset_no") != null) && (params.get("preset_no") != "")))
+      {
+        qData = this.currService.selectSurveyQ(params);
+        aData = this.currService.selectSurveyA(params);
+        qData2 = getMatchSurveyResult(qData, aData, params);
+      }
+      else
+      {
+        qCount = new HashMap();
+        qCount.put("fq", "1");
+        qCount.put("sq", "1");
+        qCount.put("tq", "1");
+      }
+      model.put("sData", sData);
+      model.put("data", qData2);
+      model.put("params", params);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/recruit/empSurvey/empSurveyManageForm.jsp", model);
+    }
+    catch (Exception e)
+    {
+      this.logger.error("surveyModify method error ", e);
+      model.put("message", "[취업설문관리 등록폼]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
