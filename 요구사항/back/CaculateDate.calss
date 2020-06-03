@@ -1,0 +1,73 @@
+package com.rad.notice;
+
+import java.util.Calendar;
+import java.util.Date;
+
+public class CaculateDate
+{
+  public int getWeekendCount(Date final_start_date, int period, String pass_day)
+  {
+    int count = 0;
+    for (int i = 1; i <= period; i++)
+    {
+      Calendar cal = Calendar.getInstance();
+      cal.setTime(final_start_date);
+      
+      int dayNum = cal.get(7);
+      if ((dayNum == 7) || (dayNum == 1)) {
+        count++;
+      }
+      if ((period > 1) && (i == 1) && (pass_day == "pass_day")) {
+        count--;
+      }
+      cal.add(5, 1);
+      final_start_date = cal.getTime();
+    }
+    return count;
+  }
+  
+  public Date addDate(Date date, int weekend_count, String temp_add)
+  {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(date);
+    if (temp_add != "") {
+      cal.add(5, weekend_count);
+    } else {
+      cal.add(5, weekend_count - 1);
+    }
+    return cal.getTime();
+  }
+  
+  public Date getFinalDate(Date date, String classify)
+  {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(date);
+    
+    int dayNum = cal.get(7);
+    if (classify == "start") {
+      if (dayNum == 6)
+      {
+        cal.add(5, 3);
+        date = cal.getTime();
+      }
+      else
+      {
+        cal.add(5, 1);
+        date = cal.getTime();
+      }
+    }
+    if (classify == "completion") {
+      if (dayNum == 7)
+      {
+        cal.add(5, 2);
+        date = cal.getTime();
+      }
+      else if (dayNum == 1)
+      {
+        cal.add(5, 1);
+        date = cal.getTime();
+      }
+    }
+    return date;
+  }
+}
