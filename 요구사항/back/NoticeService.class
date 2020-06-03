@@ -1,0 +1,281 @@
+public int selectRequirementsCount(Map<String, String> params)
+    throws Exception
+  {
+    int result = 0;
+    try
+    {
+      result = ((Integer)this.connection.queryForObject("rad.notice.selectRequirementsCount", params)).intValue();
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public List<Map<String, String>> selectRequirements(Map<String, String> params)
+    throws Exception
+  {
+    List result = null;
+    try
+    {
+      result = this.connection.queryForList("rad.notice.selectRequirements", params);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public List<Map<String, String>> autoSearchRequire(Map<String, String> params)
+    throws Exception
+  {
+    List result = null;
+    try
+    {
+      result = this.connection.queryForList("rad.notice.autoSearchRequire", params);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public int insertRequirement(Map<String, String> params)
+    throws Exception
+  {
+    int result = 0;
+    try
+    {
+      result = ((Integer)this.connection.insert("rad.notice.insertRequirement", params)).intValue();
+      params.put("current_require_no", result);
+      this.connection.insert("rad.notice.insertRequirementOperator", params);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public int updateRequirement(Map<String, String> params)
+    throws Exception
+  {
+    int result = 0;
+    try
+    {
+      result = Integer.valueOf(this.connection.update("rad.notice.updateRequirement", params)).intValue();
+      this.connection.update("rad.notice.updateRequirementOperator", params);
+      if ("1".equals(params.get("delay_status"))) {
+        updateDelayList(params);
+      }
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  private void updateDelayList(Map<String, String> params)
+    throws Exception
+  {
+    List<Map<String, Object>> updateRequire = new ArrayList();
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+    CaculateDate values = new CaculateDate();
+    try
+    {
+      Map<String, Object> oneRequire = new HashMap();
+      oneRequire.put("no", params.get("no"));
+      oneRequire.put("start_date", params.get("start_date"));
+      oneRequire.put("completion_date", params.get("completion_date"));
+      oneRequire.put("develop_period", params.get("develop_period"));
+      updateRequire.add(oneRequire);
+      while (oneRequire != null)
+      {
+        oneRequire = (Map)this.connection.queryForObject("rad.notice.selectOneRequirement", oneRequire);
+        if (oneRequire == null) {
+          break;
+        }
+        int size = updateRequire.size() - 1;
+        for (int i = size; i == size; i++)
+        {
+          String comp_date = (String)((Map)updateRequire.get(i)).get("completion_date");
+          Date date_type_start = formatter.parse(comp_date.split(". ")[0] + comp_date.split(". ")[1] + comp_date.split(". ")[2]);
+          Date final_start_date = values.getFinalDate(date_type_start, "start");
+          int period = Integer.parseInt((String)oneRequire.get("develop_period"));
+          int count = -1;
+          
+          Date final_comp_date = new Date();
+          List arrayDate = new ArrayList();
+          
+          arrayDate.add(final_start_date);
+          while (count != 0)
+          {
+            String pass_day = "";
+            Date date_type_comp = new Date();
+            Date prev_date = (Date)arrayDate.get(0);
+            if (arrayDate.size() == 1)
+            {
+              count = period;
+              date_type_comp = values.addDate(prev_date, count, "");
+              count = values.getWeekendCount(prev_date, count, pass_day);
+            }
+            else
+            {
+              prev_date = (Date)arrayDate.get(arrayDate.size() - 1);
+              Calendar cal = Calendar.getInstance();
+              cal.setTime(prev_date);
+              
+              int dayNum = cal.get(7);
+              if ((dayNum == 1) || (dayNum == 7)) {
+                pass_day = "pass_day";
+              }
+              date_type_comp = values.addDate(prev_date, count, "temp_add");
+              count = values.getWeekendCount(prev_date, count + 1, pass_day);
+            }
+            if (count != 0) {
+              arrayDate.add(date_type_comp);
+            } else {
+              final_comp_date = values.getFinalDate(date_type_comp, "completion");
+            }
+          }
+          String final_start = formatter.format(final_start_date).substring(0, 4) + ". " + formatter.format(final_start_date).substring(4, 6) + ". " + formatter.format(final_start_date).substring(6, 8);
+          String final_comp = formatter.format(final_comp_date).substring(0, 4) + ". " + formatter.format(final_comp_date).substring(4, 6) + ". " + formatter.format(final_comp_date).substring(6, 8);
+          
+          oneRequire.put("start_date", final_start);
+          oneRequire.put("completion_date", final_comp);
+          oneRequire.put("delay_status", params.get("delay_status"));
+          oneRequire.put("delay_reason", params.get("delay_reason"));
+          
+          this.connection.update("rad.notice.updateDelayOperator", oneRequire);
+        }
+        updateRequire.add(oneRequire);
+      }
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+  }
+  
+  public Map<String, String> selectRequirementsView(Map<String, String> params)
+    throws Exception
+  {
+    Map result = null;
+    try
+    {
+      result = (Map)this.connection.queryForObject("rad.notice.selectRequirementsView", params);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public List<Map<String, String>> selectRequirementsComment(Map<String, String> params)
+    throws Exception
+  {
+    List result = null;
+    try
+    {
+      result = this.connection.queryForList("rad.notice.selectRequirementsComment", params);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public Map<String, String> selectPrevNextRequirements(Map<String, String> params)
+    throws Exception
+  {
+    Map<String, String> result = new HashMap();
+    try
+    {
+      result = (Map)this.connection.queryForObject("rad.notice.selectPrevNextRequirements", params);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public int deleteRequirement(Map<String, String> params)
+    throws Exception
+  {
+    int result = 0;
+    try
+    {
+      result = Integer.valueOf(this.connection.update("rad.notice.deleteRequirement", params)).intValue();
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public int insertRequirmentComment(Map<String, String> params)
+    throws Exception
+  {
+    int result = 0;
+    try
+    {
+      result = this.connection.update("rad.notice.insertRequirmentComment", params);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public int updateRequirmentComment(Map<String, String> params)
+    throws Exception
+  {
+    int result = 0;
+    try
+    {
+      this.connection.update("rad.notice.updateRequirmentComment", params);
+      result = 1;
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
+  public int deleteRequirmentComment(Map<String, String> params)
+    throws Exception
+  {
+    int result = 0;
+    try
+    {
+      result = this.connection.update("rad.notice.deleteRequirmentComment", params);
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      throw e;
+    }
+    return result;
+  }
