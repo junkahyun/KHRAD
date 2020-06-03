@@ -1,0 +1,271 @@
+@RequestMapping({"/rad/auth/account.kh"})
+  public ModelAndView account(HttpServletRequest req, HttpServletResponse res, HttpSession session)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, String>> list = null;
+    List<Map<String, String>> roleList = null;
+    Map<String, String> map = null;
+    Map<String, Object> aduser = (Map)session.getAttribute("aduser");
+    try
+    {
+      if ((params.get("cpage") == null) || (((String)params.get("cpage")).trim().equals(""))) {
+        params.put("cpage", "1");
+      }
+      if ((params.get("searchValue") != null) && (!((String)params.get("searchValue")).trim().equals(""))) {
+        params.put("search_value_", "%" + (String)params.get("searchValue") + "%");
+      }
+      params.put("role", (String)aduser.get("role_code"));
+      String[] RiId = { "nocturn93", "hay4863", "ghdthdud0806", "hsgiger77" };
+      for (int i = 0; i < RiId.length; i++) {
+        if (RiId[i].equals((String)aduser.get("id"))) {
+          params.put("adId", (String)aduser.get("id"));
+        }
+      }
+      params.put("site_id", (String)KHContext.local.get());
+      String search_site_id = (String)params.get("search_site_id");
+      if ((search_site_id == null) || (search_site_id.length() == 0)) {
+        params.put("search_site_id", (String)KHContext.local.get());
+      }
+      Map<String, Object> user = (Map)req.getSession().getAttribute("USER");
+      
+      Integer dept_code = Integer.valueOf(Integer.parseInt((String)user.get("dept_code")));
+      model.put("total", this.mainService.selectAccountCount(params));
+      model.put("RIbtn", this.mainService.selectRICount(params));
+      list = this.mainService.selectAccount(params);
+      
+      roleList = this.authorityService.selectRole(params);
+      for (int i = 0; i < list.size(); i++)
+      {
+        Map userMap = (Map)list.get(i);
+        String role_code = (String)userMap.get("role_code");
+        for (int j = 0; j < roleList.size(); j++)
+        {
+          Map roleMap = (Map)roleList.get(j);
+          if (((String)roleMap.get("name")).equals(role_code))
+          {
+            userMap.put("role_code_name", (String)roleMap.get("description"));
+            break;
+          }
+        }
+      }
+      model.put("list", list);
+      list = this.mainService.selectBranch(null);
+      String bName = "";String bNo = "";
+      for (int i = 0; i < list.size(); i++)
+      {
+        if (i != 0)
+        {
+          bName = bName + "_";
+          bNo = bNo + "_";
+        }
+        map = (Map)list.get(i);
+        bName = bName + (String)map.get("name");
+        bNo = bNo + (String)map.get("no");
+      }
+      String dept_code4search = (String)params.get("dept_code4search");
+      if (dept_code4search != null)
+      {
+        String depts = this.orgManager.getParentOrgs(dept_code4search);
+        if (depts != null) {
+          model.put("parentOrgs", depts.replaceAll("_", "/"));
+        }
+      }
+      model.put("bList", list);
+      model.put("roleList", roleList);
+      model.put("bName", bName);
+      model.put("bNo", bNo);
+      model.put("cpage", params.get("cpage"));
+      model.put("params", params);
+      
+      mav = new ModelAndView("/WEB-INF/jsp/rad/main/account.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("account method error ", e);
+      model.put("result", "0");
+      model.put("message", "[계정관리 페이지]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/auth/accountSave.kh"})
+  public ModelAndView accountSave(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    try
+    {
+      int result = 0;
+      
+      params.put("user_id", (String)params.get("id"));
+      params.put("site_id", (String)KHContext.local.get());
+      params.put("join_date", ((String)params.get("join_date")).replaceAll(". ", ""));
+      params.put("out_date", ((String)params.get("out_date")).replaceAll(". ", ""));
+      
+      String orgNo = (String)params.get("dept_code");
+      String branch = this.orgManager.getBranch(orgNo);
+      if ((branch == null) || ("1134".equals(branch)) || ("1005".equals(branch))) {
+        branch = "2";
+      }
+      params.put("branch", branch);
+      if (params != null) {
+        result = this.mainService.updateAccount(params);
+      }
+      this.alarmService.checkUserAlarmRead(params);
+      
+      this.orgManager.initialize();
+      
+      model.put("result", Integer.valueOf(result));
+      System.out.println("model : " + model);
+      
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("accountSave method error ", e);
+      model.put("result", "0");
+      model.put("message", "[계정관리 정보 수정]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("jsonView", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/auth/accountApply.kh"})
+  public ModelAndView accountApply(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, String>> roleList = null;
+    Map<String, String> data = null;
+    try
+    {
+      data = this.mainService.selectUserInfo(params);
+      roleList = this.authorityService.selectRole(params);
+      
+      model.put("data", data);
+      model.put("params", params);
+      model.put("roleList", roleList);
+      
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("accountApply method error ", e);
+      model.put("result", "0");
+      model.put("message", "[계정신청 승인]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("jsonView", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/auth/accountMainPopUp.kh"})
+  public ModelAndView accountMainPopUp(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, String>> roleList = null;
+    Map<String, String> data = null;
+    try
+    {
+      data = this.mainService.selectUserInfo(params);
+      roleList = this.authorityService.selectRole(params);
+      
+      model.put("data", data);
+      model.put("params", params);
+      model.put("roleList", roleList);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/main/account_mainPopUp.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("account_mainPopUp method error ", e);
+      model.put("result", "0");
+      model.put("message", "[계정관리 수정 팝업 오픈]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("jsonView", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/auth/accountThumSave.kh"})
+  public ModelAndView accountThumSave(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    try
+    {
+      int result = 0;
+      
+      MultipartHttpServletRequest fileReq = (MultipartHttpServletRequest)req;
+      MultipartFile file = null;
+      String realpath = req.getRealPath("/");
+      
+      params.put("site_id", (String)KHContext.local.get());
+      
+      file = fileReq.getFile("fileObj");
+      if ((file != null) && (file.getSize() > 0L))
+      {
+        String[] _file = Utils.split(file.getOriginalFilename(), ".");
+        String filename = (String)params.get("id") + "_thum." + _file[1];
+        File newFile = new File(realpath + Utils.getPropertyData("kh.rad.profile.url"));
+        if (!newFile.exists()) {
+          newFile.mkdirs();
+        }
+        newFile = new File(realpath + Utils.getPropertyData("kh.rad.profile.url") + filename);
+        
+        file.transferTo(newFile);
+        params.put("filename", filename);
+        result = this.mainService.accountThumSave(params);
+      }
+      model.put("result", Integer.valueOf(result));
+      
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("accountThumSave method error ", e);
+      model.put("result", "0");
+      model.put("message", "[계정관리 썸네일 수정]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("jsonView", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/auth/accountDelete.kh"})
+  public ModelAndView accountDelete(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    try
+    {
+      params.put("site_id", (String)KHContext.local.get());
+      
+      int result = this.mainService.deleteAccount(params);
+      
+      this.orgManager.initialize();
+      
+      model.put("result", Integer.valueOf(result));
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("accountDelete method error ", e);
+      model.put("result", "0");
+      model.put("message", "[계정삭제]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("jsonView", model);
+    }
+    return mav;
+  }
+  
