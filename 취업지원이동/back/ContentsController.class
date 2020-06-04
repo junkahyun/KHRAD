@@ -1,0 +1,55 @@
+@RequestMapping({"/rad/contents/jobSupportChange.kh"})
+  public ModelAndView jobSupportChange(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    try
+    {
+      String[] arrayNo = req.getParameterValues("arrayNo[]");
+      
+      Map<String, String> arrmap = new HashMap();
+      for (int i = 0; i < arrayNo.length; i++) {
+        arrmap.put(i, arrayNo[i]);
+      }
+      int result = this.contentsService.changeJobsupport(arrmap);
+      model.put("result", Integer.valueOf(result));
+      
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("org method error ", e);
+      model.put("result", "0");
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  public int changeJobsupport(Map<String, String> arrmap)
+    throws Exception
+  {
+    int result = 0;
+    int total = arrmap.size();
+    try
+    {
+      for (int i = 0; i < arrmap.size(); i++)
+      {
+        Map<String, String> nummap = new HashMap();
+        
+        nummap.put("num", (String)arrmap.get(i));
+        nummap.put("index", String.valueOf(i));
+        nummap.put("total", String.valueOf(total));
+        
+        result = this.connection.update("rad.contents.changeJobsupport", nummap);
+      }
+    }
+    catch (Exception e)
+    {
+      e.getStackTrace();
+      throw e;
+    }
+    return result;
+  }
+  
