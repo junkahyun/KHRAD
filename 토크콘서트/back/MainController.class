@@ -1,0 +1,172 @@
+@RequestMapping({"/rad/main/event.kh"})
+  public ModelAndView event(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<HashMap<String, String>> list = null;
+    try
+    {
+      JSONObject json = new JSONObject();
+      Iterator<String> keys = params.keySet().iterator();
+      while (keys.hasNext())
+      {
+        String key = (String)keys.next();
+        json.put(key, (String)params.get(key));
+      }
+      model.put("parameter", json);
+      model.put("params", params);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/main/event.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("event method error ", e);
+      model.put("result", "0");
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/main/eventDetail.kh"})
+  public ModelAndView eventDetail(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<HashMap<String, Object>> list = null;
+    try
+    {
+      Map<String, String> session = (Map)req.getSession().getAttribute("aduser");
+      model.put("mobile", session.get("mobile"));
+      
+      String parameters = (String)params.get("parameter");
+      JSONParser parser = new JSONParser();
+      JSONObject json = (JSONObject)parser.parse(parameters);
+      Iterator<String> keys = json.keySet().iterator();
+      while (keys.hasNext())
+      {
+        String key = (String)keys.next();
+        params.put(key, (String)json.get(key));
+      }
+      if ((params.get("cpage") == null) || (((String)params.get("cpage")).trim().equals(""))) {
+        params.put("cpage", "1");
+      }
+      String category = (String)params.get("category");
+      
+      String type = category.substring(0, 1);
+      if (type.equals("T"))
+      {
+        if (((String)params.get("mode")).equals("inquiry"))
+        {
+          model.put("total", this.mainService.getTotalEventList(params));
+          list = this.mainService.getEventList(params);
+        }
+        else if (((String)params.get("mode")).equals("question"))
+        {
+          model.put("total", this.mainService.getTotalEventQuestionList(params));
+          list = this.mainService.getEventQuestionList(params);
+        }
+      }
+      else if (type.equals("E"))
+      {
+        model.put("total", this.mainService.getTotalEmplEvent(params));
+        list = this.mainService.getEmplEvent(params);
+      }
+      model.put("cpage", params.get("cpage"));
+      model.put("list", list);
+      model.put("params", params);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/main/eventDetail" + type + ".jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("eventDetail method error ", e);
+      model.put("result", "0");
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/main/insertEventTicket.kh"})
+  public ModelAndView insertEventTicket(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<HashMap<String, String>> list = null;
+    try
+    {
+      HttpSession session = req.getSession();
+      Map<String, String> user = (Map)session.getAttribute("aduser");
+      params.put("manager", (String)user.get("name"));
+      this.mainService.insertEventTicket(params);
+      
+      model.put("params", params);
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("event method error ", e);
+      model.put("result", "0");
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/main/insertEventPublish.kh"})
+  public ModelAndView insertEventPublish(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<HashMap<String, String>> list = null;
+    try
+    {
+      HttpSession session = req.getSession();
+      Map<String, String> user = (Map)session.getAttribute("aduser");
+      params.put("publisher", (String)user.get("name"));
+      this.mainService.insertEventPublish(params);
+      
+      model.put("params", params);
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("event method error ", e);
+      model.put("result", "0");
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/main/deleteEvent.kh"})
+  public ModelAndView deleteEvent(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<HashMap<String, String>> list = null;
+    try
+    {
+      this.mainService.deleteEvent(params);
+      
+      model.put("params", params);
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("event method error ", e);
+      model.put("result", "0");
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
