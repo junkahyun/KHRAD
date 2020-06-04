@@ -1,0 +1,98 @@
+RequestMapping({"/rad/main/retire.kh"})
+  public ModelAndView retire(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    try
+    {
+      model.put("params", params);
+      
+      mav = new ModelAndView("/WEB-INF/jsp/rad/main/retire.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("freeForm method error ", e);
+      model.put("result", "0");
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/main/retireMember.kh"})
+  public ModelAndView retireMember(HttpServletRequest req, HttpServletResponse res)
+    throws Exception
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    Map<String, String> user = null;
+    File newFile = null;
+    String reName = "";
+    String orgFileName = "";
+    int result = 0;
+    try
+    {
+      MultipartHttpServletRequest fileReq = (MultipartHttpServletRequest)req;
+      Iterator<String> fileNumber = fileReq.getFileNames();
+      String name = (String)fileNumber.next();
+      MultipartFile file = fileReq.getFile(name);
+      String realpath = req.getRealPath("/");
+      
+      user = this.mainService.selectWorkerInfo(params);
+      if (file.getSize() > 0L)
+      {
+        newFile = new File(realpath + Utils.getPropertyData("kh.upload.retire.url"));
+        if (!newFile.exists()) {
+          newFile.mkdirs();
+        }
+        orgFileName = file.getOriginalFilename();
+        StringTokenizer str = new StringTokenizer(orgFileName);
+        
+        String[] fileType = { ".jpg", ".png", ".gif", ".JPG", ".PNG", ".GIF" };
+        String orFileType = "";
+        int i;
+        for (; str.hasMoreTokens(); i < fileType.length)
+        {
+          i = 0; continue;
+          if (orgFileName.contains(fileType[i]))
+          {
+            reName = str.nextToken(fileType[i]);
+            orFileType = fileType[i];
+          }
+          i++;
+        }
+        reName = "사직서_" + (String)user.get("udept") + "_" + (String)user.get("name");
+        orgFileName = reName + orFileType;
+        
+        String utilname = Utils.rename(orFileType.substring(1, orFileType.length()));
+        
+        newFile = new File(realpath + Utils.getPropertyData("kh.upload.retire.url") + utilname);
+        
+        file.transferTo(newFile);
+        params.put("fileupload", utilname + "|" + orgFileName);
+      }
+      params.put("ret_date", ((String)params.get("ret_date")).replaceAll(". ", ""));
+      if ((params != null) && (!"".equals(params))) {
+        result = this.mainService.insertRetirement(params);
+      }
+      params.put("sub_no", String.valueOf(user.get("no")));
+      params.put("board_name", "account_retire");
+      this.alarmService.insertUserAlarm(params);
+      
+      model.put("message", "퇴직신청이 완료되었습니다.");
+      model.put("result", Integer.valueOf(result));
+      
+      mav = new ModelAndView("/WEB-INF/jsp/rad/main/page.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("freeForm method error ", e);
+      model.put("result", "0");
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
