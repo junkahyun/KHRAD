@@ -1,0 +1,275 @@
+ng({"/rad/contents/mediaUpload.kh"})
+  public ModelAndView mediaUpload(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, String>> list = null;
+    Map<String, String> session = (Map)req.getSession().getAttribute("aduser");
+    String userNo = String.valueOf(session.get("no"));
+    String readNo = "";
+    int sub_category_no = 0;
+    List<Map<String, String>> categoryList = null;
+    try
+    {
+      params.put("site_id", getSessionValue(req, "site_id"));
+      params.put("role_code", getSessionValue(req, "role_code"));
+      params.put("roleFirstLetter", ((String)params.get("role_code")).substring(0, 1));
+      params.put("depart", getSessionValue(req, "depart"));
+      params.put("user_id", getSessionValue(req, "id"));
+      if ((params.get("cpage") == null) || (((String)params.get("cpage")).trim().equals(""))) {
+        params.put("cpage", "1");
+      }
+      if (params.get("sorting") != null)
+      {
+        String sort = (String)params.get("sorting");
+        String str1;
+        switch ((str1 = sort).hashCode())
+        {
+        case 1550036: 
+          if (str1.equals("")) {}
+          break;
+        case 1631876: 
+          if (str1.equals("")) {
+            break;
+          }
+          break;
+        case 1749063: 
+          if (str1.equals("")) {}
+          break;
+        case 1193252476: 
+          if (!str1.equals(""))
+          {
+            break label376;
+            sub_category_no = 1;
+            break label379;
+            sub_category_no = 2;
+            break label379;
+            sub_category_no = 3;
+            break label379;
+          }
+          else
+          {
+            sub_category_no = 4;
+          }
+          break;
+        }
+        label376:
+        sub_category_no = 0;
+        label379:
+        if (sub_category_no != 0)
+        {
+          params.put("sub_category_no", sub_category_no);
+          categoryList = this.contentsService.getSubCategorySortingList(params);
+          model.put("categoryList", categoryList);
+        }
+      }
+      model.put("total", this.contentsService.selectMediaCount(params));
+      list = this.contentsService.selectMedia(params);
+      
+      MainController main = (MainController)Utils.getBeanObj2(req, "com.rad.main.mainController");
+      readNo = main.chkUserRead(req, params, "MEDIA");
+      model.put("readNo", readNo);
+      
+      model.put("list", list);
+      model.put("cpage", params.get("cpage"));
+      model.put("params", params);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/contents/mediaUpload.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("mediaUpload method error ", e);
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/contents/mediaUploadView.kh"})
+  public ModelAndView mediaUploadView(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    Map<String, String> mediaViewData = null;
+    List<Map<String, String>> shareList = null;
+    Map<String, String> prev = null;
+    Map<String, String> next = null;
+    try
+    {
+      if ((params.get("incpage") == null) || (((String)params.get("incpage")).trim().equals(""))) {
+        params.put("incpage", "1");
+      }
+      mediaViewData = this.contentsService.selectMediaView(params);
+      shareList = this.contentsService.getSharedList(params);
+      prev = this.contentsService.selectPrevMedia(params);
+      next = this.contentsService.selectNextMedia(params);
+      int shareCount = 0;
+      for (int i = 0; i < shareList.size(); i++)
+      {
+        Long time = Long.valueOf(Long.parseLong(String.valueOf(((Map)shareList.get(i)).get("time"))));
+        String share_boolean = String.valueOf(((Map)shareList.get(i)).get("share_boolean"));
+        String del_flag = String.valueOf(((Map)shareList.get(i)).get("del_flag"));
+        if ((time.longValue() >= 0L) && (share_boolean.equals("0")) && (del_flag.equals("0"))) {
+          shareCount += shareCount + 1;
+        }
+      }
+      MediaUploader mediaUploader = new MediaUploader();
+      String mediaToken = mediaUploader.midibusAuth();
+      if (String.valueOf(mediaViewData.get("encode_flag")).equals("1"))
+      {
+        String check_encode = mediaUploader.checkEncodingResult((String)mediaViewData.get("media_id"), mediaToken);
+        if (check_encode.contains("true"))
+        {
+          params.put("encoded", "2");
+          this.contentsService.updateEncodedStat(params);
+          model.put("encoded", "2");
+          System.out.println(params);
+        }
+      }
+      model.put("mediaToken", mediaToken);
+      model.put("total", this.contentsService.getSharedListCount(params));
+      model.put("incpage", params.get("incpage"));
+      model.put("shareCount", Integer.valueOf(shareCount));
+      model.put("mediaViewData", mediaViewData);
+      model.put("shareList", shareList);
+      model.put("prev", prev);
+      model.put("next", next);
+      model.put("params", params);
+      
+      mav = new ModelAndView("/WEB-INF/jsp/rad/contents/mediaUploadView.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("mediaUploadView method error ", e);
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/contents/updateCommentDel.kh"})
+  public ModelAndView updateCommentDel(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    try
+    {
+      int result = this.contentsService.updateCommentDel(params);
+      System.out.println(params);
+      model.put("result", Integer.valueOf(result));
+      mav = new ModelAndView("jsonView", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("updateCommentDel method err", e);
+      model.put("message", "[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/contents/getCommentData.kh"})
+  public ModelAndView getCommentData(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    List<Map<String, String>> commentList = new ArrayList();
+    try
+    {
+      commentList = this.contentsService.getCommentListPopup(params);
+      model.put("commentList", commentList);
+      model.put("params", params);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/contents/mediaCommentListPopUp.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("getCommentData method err", e);
+      model.put("message", "[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/contents/getShareDataForUpdate.kh"})
+  public ModelAndView getShareDataForUpdate(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    Map<String, String> shareData = null;
+    List<Map<String, String>> currList = null;
+    List<Map<String, String>> commentList = null;
+    try
+    {
+      params.put("site_id", getSessionValue(req, "site_id"));
+      params.put("role_code", getSessionValue(req, "role_code"));
+      params.put("roleFirstLetter", ((String)params.get("role_code")).substring(0, 1));
+      params.put("depart", getSessionValue(req, "depart"));
+      params.put("user_id", getSessionValue(req, "id"));
+      if ((params.get("curr_no") == null) || (params.get("curr_no") == "")) {
+        commentList = this.contentsService.getShareAllCommentList(params);
+      } else {
+        commentList = this.contentsService.getCommentList(params);
+      }
+      if ((getSessionValue(req, "role_code").equals("TP")) || (getSessionValue(req, "role_code").equals("TF")))
+      {
+        currList = this.contentsService.getCurrList(params);
+        model.put("currList", currList);
+      }
+      shareData = this.contentsService.selectOneShareData(params);
+      model.put("commentList", commentList);
+      model.put("shareData", shareData);
+      model.put("params", params);
+      mav = new ModelAndView("/WEB-INF/jsp/rad/contents/mediaShareDataPopup.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("getShareDataForUpdate method error ", e);
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
+  
+  @RequestMapping({"/rad/contents/mediaUploadForm.kh"})
+  public ModelAndView mediaUploadForm(HttpServletRequest req, HttpServletResponse res)
+  {
+    ModelAndView mav = null;
+    Map<String, Object> model = new HashMap();
+    Map<String, String> params = getParameters(req, null);
+    Map<String, String> mediaViewData = null;
+    List<Map<String, String>> shareList = null;
+    try
+    {
+      String mode = (String)params.get("mode");
+      if ((mode != null) && (mode.trim().equals("update")))
+      {
+        mediaViewData = this.contentsService.selectMediaView(params);
+        shareList = this.contentsService.getSharedList(params);
+        
+        model.put("mediaViewData", mediaViewData);
+        model.put("shareList", shareList);
+      }
+      List<Map<String, String>> subCategoryList = this.contentsService.getSubCategoryList(params);
+      model.put("subCategoryList", subCategoryList);
+      
+      MediaUploader mediaUploader = new MediaUploader();
+      String mediaToken = mediaUploader.midibusAuth();
+      
+      model.put("mediaToken", mediaToken);
+      model.put("mediaId", Utils.getPropertyData("media.userId"));
+      model.put("params", params);
+      model.put("bList", this.noticeService.selectBranch(null));
+      mav = new ModelAndView("/WEB-INF/jsp/rad/contents/mediaUploadForm.jsp", model);
+    }
+    catch (Exception e)
+    {
+      logger.error("issueForm method error ", e);
+      model.put("message", "[]:[" + e.getMessage() + "]");
+      mav = new ModelAndView("/WEB-INF/jsp/common/error.jsp", model);
+    }
+    return mav;
+  }
