@@ -25,7 +25,7 @@ BackEnd Developer
 <br>
 
 ### 2. 수강권 등록 구조 개편 
-BackEnd Developer
+BackEnd Developer<br>
 2019.10 ~ 2020. 02 (4개월)
 ***
 * 회원가입시 수강생으로 자동 등록 될 수 있는 구조로 개편
@@ -33,7 +33,7 @@ BackEnd Developer
 <br>
 
 ### 3. 신규 입사자 회원가입 시스템 및 DB 설계, 기능 개발
-BackEnd Developer
+BackEnd Developer<br>
 2019.07 ~ 2019.09 (2개월)
 ***
 * 신규 입사자 회원가입 시 등록 프로세스 설계 및 DB 테이블 신규 생성
@@ -41,7 +41,7 @@ BackEnd Developer
 <br>
 
 ### 4. Drag & Drop시 데이터 인덱스 값 자동 업데이트 기능 개발
-BackEnd Developer
+BackEnd Developer<br>
 2019.03 ~ 2019.03 (1개월)
 ***
 * 드래그 앤 드롭시 데이터 인덱스 값 자동으로 변경되도록 기능 개발
